@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, redirect
 from datetime import datetime
 import re
+from spotify import search
 
 app = Flask(__name__)
 
@@ -8,19 +9,7 @@ app = Flask(__name__)
 def home():
     return "Hello, Flask!"
 
-@app.route("/hello/<name>")
-def hello_there(name):
-    now = datetime.now()
-    formatted_now = now.strftime("%A, %d %B, %Y at %X")
-
-    # Filter the name argument to letters only using regular expressions. URL arguments
-    # can contain arbitrary text, so we restrict to safe characters only.
-    match_object = re.match("[a-zA-Z]+", name)
-
-    if match_object:
-        clean_name = match_object.group(0)
-    else:
-        clean_name = "Friend"
-
-    content = "Hello there, " + clean_name + "! It's " + formatted_now
-    return content
+# Spotify calls
+@app.route("/search/<query>")
+def spotify_search(query):
+    return search(query)
