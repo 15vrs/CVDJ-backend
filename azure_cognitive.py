@@ -1,4 +1,3 @@
-import http.client
 import json
 import requests
 from flask import jsonify
