@@ -1,10 +1,8 @@
-from flask import Flask, redirect, request
-from datetime import datetime
-import re
+from flask import Flask, request
+import time
 
 # Calls to external services
-from spotify import search, get_audio_features
-from spotify_helper import format_emotion_data, prune_audio_features
+from spotify_helper import track_recommendations
 from azure_cognitive import emotion
 
 app = Flask(__name__)
@@ -26,6 +24,7 @@ def determine_emotion():
 # Spotify
 @app.route("/test/spotifyrecs")
 def spotify_track_recommendations_test():
+    start_time = time.time()
 
     # setup temp var for number of recs
     n = 10
@@ -41,36 +40,9 @@ def spotify_track_recommendations_test():
         "surprise": 0.004
     }
 
-    # Reformat emotion data into spotify-queryable quantities
-    emotion, valence, energy = format_emotion_data(azure_emotion)
+    tracks = track_recommendations(azure_emotion, n)
 
-    # Find n track recommendations
-    tracks = []
-    i = 0
-    while len(tracks) < n and i <= 2000:
-
-        # Search spotify tracks for dominant emotion
-        search_res = search(emotion, i)
-        track_objects = list(search_res["tracks"]["items"])
-        ids = [i["id"] for i in track_objects]
-
-        # Get audio features for tracks
-        if ids == list():
-            break
-        audio_features = get_audio_features(ids)
-
-        # Prune audio features by target valence and energy
-        prune_audio_features(audio_features=audio_features, target_type='valence', target_value=valence)
-        prune_audio_features(audio_features=audio_features, target_type='energy', target_value=energy)
-
-        # Add matching track objects to tracks list
-        audio_features_objects = list(audio_features['audio_features'])
-        ids = set([i["id"] for i in audio_features_objects])
-        tracks += [i for i in track_objects if i["id"] in ids]
-
-        # Increment offset by 50, the max limit for spotify search results  
-        i += 50
-    
     # temporary formatting for app return
-    names = '<p>' + '</p><p>'.join([i["name"] for i in tracks]) + '</p>'
+    names = f"<p>{'</p><p>'.join([i['name'] for i in tracks])}</p><p>{time.time() - start_time} seconds</p>'"
+    # names = '<p>' + '</p><p>'.join([i["name"] for i in tracks]) + f'</p><p>{time.time() - start_time}</p>'
     return names
