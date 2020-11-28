@@ -1,6 +1,6 @@
 # Import statements
-import base64
-import json
+#import base64
+#import json
 import requests
 import time
 
@@ -28,27 +28,50 @@ BEARER_TOKEN, EXPIRES_IN, START_TIME = auth_client_credientials()
 BASE_API_URL = f'https://api.spotify.com/v1'
 
 # Search
-def search(query):
-    global BASE_API_URL, BEARER_TOKEN, EXPIRES_IN, START_TIME
+def search(emotion, offset):
 
+    # Check OAuth
+    global BASE_API_URL, BEARER_TOKEN, EXPIRES_IN, START_TIME
     if (time.time() - START_TIME) > EXPIRES_IN:
         BEARER_TOKEN, EXPIRES_IN, START_TIME = auth_client_credientials()
 
-    # possible_types = 'album,artist,playlist,track,show,episode'
-    # market = 'US'
-    # limit = 1
-    # offset = 0
-    types = 'track'
-    search_url = f'{BASE_API_URL}/search?q={query}&type={types}'
+    # Function variables
+    limit = 50
+    type = 'track'
 
-    payload={}
+    # Call to spotify API
+    search_url = f'{BASE_API_URL}/search?q={emotion}&type={type}&limit={limit}&offset={offset}'
+    payload = {}
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {BEARER_TOKEN}'
     }
+    res = requests.get(search_url, data=payload, headers=headers).json()
 
-    res = requests.get(search_url, data=payload, headers=headers)
-    res_data = res.json()
+    # Return a list of track ids.
+    return res
 
-    return res_data
+# Get audio features
+def get_audio_features(track_ids):
+
+    # Check OAuth
+    global BASE_API_URL, BEARER_TOKEN, EXPIRES_IN, START_TIME
+    if (time.time() - START_TIME) > EXPIRES_IN:
+        BEARER_TOKEN, EXPIRES_IN, START_TIME = auth_client_credientials()
+
+    # Function variables
+    x = ','.join(track_ids)
+
+    # Call to spotify API
+    url = f'{BASE_API_URL}/audio-features/?ids={x}'
+    payload = {}
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {BEARER_TOKEN}'
+    }
+    res = requests.get(url, data=payload, headers=headers).json()
+
+    # Return spotify results as json object
+    return res
