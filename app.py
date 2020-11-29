@@ -17,9 +17,10 @@ def user_join(room_code):
     user_ids[uid] = room_code
     return "You're in."
 
-@app.route("/emotion", methods=['POST'])
+@app.route("/emotion")
 def determine_emotion():
-    return emotion(request.form.get('imageUrl'))
+    # visit https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg to see image
+    return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
 
 # Spotify
 @app.route("/test/spotifyrecs")
