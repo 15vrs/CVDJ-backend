@@ -2,6 +2,7 @@
 
 import requests
 import time
+import random
 from urllib.parse import urlencode
 
 # Authorization variables
@@ -27,8 +28,12 @@ def client_credientials():
     return res_data['access_token'], res_data['expires_in'], time.time()
 
 # Authorization code flow
-def authorization_code(state):
+def authorization_code():
     global CLIENT_ID, REDIRECT_URI, AUTHORIZE_URL
+
+    state = ''
+    for _ in range(16):
+        state += random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
 
     scope = 'user-read-playback-state user-modify-playback-state'
 
@@ -42,7 +47,7 @@ def authorization_code(state):
     }
     query_string = f'{AUTHORIZE_URL}?{urlencode(query=query_dict)}'
 
-    return query_string
+    return query_string, state
 
 def get_access_token(code):
     global CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, TOKEN_URL

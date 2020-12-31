@@ -1,6 +1,5 @@
 # Handle all calls directly from app.py.
 
-import random
 from spotipy.spotify_api import search, get_audio_features
 from spotipy.spotify_helper import format_emotion_data, prune_audio_features
 from spotipy.spotify_auth import authorization_code, get_access_token
@@ -47,12 +46,9 @@ def track_recommendations(emotion_json, n):
     
     return tracks[:n]
 
+# Logging a user in
 def login():
-    state = ''
-    for _ in range(16):
-        state += random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
-
-    return authorization_code(state), state
+    return authorization_code()
 
 def callback(code):
     return get_access_token(code)
