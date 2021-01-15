@@ -10,6 +10,14 @@ app = Flask(__name__)
 rooms = []
 user_ids = {}
 
+# fix for CORS issue
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+  return response
+
 @app.route("/join/<room_code>", methods=['POST'])
 def user_join(room_code):
     uid = request.form.get('userId')
@@ -17,7 +25,7 @@ def user_join(room_code):
     user_ids[uid] = room_code
     return "You're in."
 
-@app.route("/emotion")
+@app.route("/emotion", methods=['POST'])
 def determine_emotion():
     # visit https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg to see image
     return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
