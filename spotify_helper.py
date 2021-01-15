@@ -43,7 +43,7 @@ def track_recommendations(emotion_json, n):
         # Increment offset by 50, the max limit for spotify search results  
         i += 50
     
-    return tracks
+    return tracks[:n]
 
 # Params:   azure_cognitive emotion JSON for one person
 # Returns:  dominant emotion
