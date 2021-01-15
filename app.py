@@ -4,7 +4,7 @@ import time
 from flask.json import jsonify
 
 # Calls to external services
-from spotipy.spotify import track_recommendations, login, callback, create_room
+from spotipy.spotify import track_recommendations, login, callback, new_room
 from azure_cognitive import emotion
 
 app = Flask(__name__)
@@ -31,12 +31,50 @@ def user_join(room_code):
     user_ids[uid] = room_code
     return "You're in."
 
-@app.route("/emotion", methods=['POST'])
+# Creating a new CVDJ room with a user that is signed into Spotify.
+@app.route("/create_room/<user_id>")
+def create_room(user_id):
+    rsp = new_room(user_id)
+    if rsp is 0:
+        return "Error creating room."
+    return f"{rsp[0]}, {rsp[1]}"
+
+# Logging a user into Spotify to obtain access to their Spotify account.
+@app.route("/login")
+def spotify_login():
+    url, cookies = login()
+
+    res = make_response(redirect(url))
+    res.set_cookie('spotify_auth_state', cookies)
+
+    return res
+
+@app.route("/callback/")
+def spotify_callback():
+    error = request.args.get('error')
+    code = request.args.get('code')
+    state = request.args.get('state')
+    stored_state = request.cookies.get('spotify_auth_state')
+
+    if error is not None:
+        return error
+
+    if state is None or state != stored_state:
+        return "State mismatch error"
+
+    cvdj_user_id = callback(code)
+    if cvdj_user_id is 0:
+        return "Error creating and adding user to DB."
+    
+    return f"{cvdj_user_id}"
+
+# Call to Face API for emotion (test).
+@app.route("/emotion")
 def determine_emotion():
     # visit https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg to see image
     return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
 
-## Calls to spotify code
+# Calls to spotify code (test).
 @app.route("/test/spotifyrecs")
 def spotify_track_recommendations_test():
     start_time = time.time()
@@ -60,39 +98,3 @@ def spotify_track_recommendations_test():
     # TEMP: temporary formatting for app return
     names = f"<p>{'</p><p>'.join([i['name'] for i in tracks])}</p><p>{time.time() - start_time} seconds</p>'"
     return names
-
-# Create Room forces spotify premium user to log in.
-@app.route("/create_room", methods=['GET'])
-def spotify_login():
-    url, cookies = login()
-
-    res = make_response(redirect(url))
-    res.set_cookie('spotify_auth_state', cookies)
-
-    return res
-
-@app.route("/callback/")
-def spotify_callback():
-    error = request.args.get('error')
-    code = request.args.get('code')
-    state = request.args.get('state')
-    stored_state = request.cookies.get('spotify_auth_state')
-
-    if error is not None:
-        return "Sign-in error"
-
-    if state is None or state != stored_state:
-        return "State mismatch error"
-
-    # If there is no sign in error, create and return a new room.
-    access_token, refresh_token, start_time = callback(code)
-    out = create_room(access_token, refresh_token, start_time)
-    
-    return jsonify(
-        room_code = out.room_number,
-        access_token = out.access_token,
-        refresh_token = out.refresh_token,
-        start_time = out.start_time,
-        playlist_uri = out.playlist_uri
-    )
-
