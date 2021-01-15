@@ -3,7 +3,7 @@ import time
 
 # Calls to external services
 from spotify_helper import track_recommendations
-from azure_cognitive import emotion
+from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
 
@@ -17,9 +17,13 @@ def user_join(room_code):
     user_ids[uid] = room_code
     return "You're in."
 
-@app.route("/emotion", methods=['POST'])
+@app.route("/emotion")
 def determine_emotion():
-    return emotion(request.form.get('imageUrl'))
+    return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
+
+@app.route("/emotion_with_stream")
+def determine_emotion_from_stream():
+    return emotion_with_stream()
 
 # Spotify
 @app.route("/test/spotifyrecs")
