@@ -62,7 +62,7 @@ def spotify_track_recommendations_test():
     return names
 
 # Create Room forces spotify premium user to log in.
-@app.route("/create_room", methods=['POST'])
+@app.route("/create_room", methods=['GET'])
 def spotify_login():
     url, cookies = login()
 
