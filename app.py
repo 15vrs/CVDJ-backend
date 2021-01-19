@@ -2,13 +2,17 @@ from flask import Flask, request, redirect, make_response
 import time
 
 # Calls to external services
-from spotipy.spotify import track_recommendations, login, callback
+from spotipy.spotify import track_recommendations, login, callback, create_room
 from azure_cognitive import emotion
 
 app = Flask(__name__)
 
 rooms = []
 user_ids = {}
+
+@app.route("/")
+def home_page():
+    return "CVDJ!"
 
 @app.route("/join/<room_code>", methods=['POST'])
 def user_join(room_code):
@@ -47,7 +51,8 @@ def spotify_track_recommendations_test():
     names = f"<p>{'</p><p>'.join([i['name'] for i in tracks])}</p><p>{time.time() - start_time} seconds</p>'"
     return names
 
-@app.route("/login")
+# Create Room forces spotify premium user to log in.
+@app.route("/create_room")
 def spotify_login():
     url, cookies = login()
 
@@ -55,7 +60,6 @@ def spotify_login():
     res.set_cookie('spotify_auth_state', cookies)
 
     return res
-
 @app.route("/callback/")
 def spotify_callback():
     error = request.args.get('error')
@@ -64,11 +68,13 @@ def spotify_callback():
     stored_state = request.cookies.get('spotify_auth_state')
 
     if error is not None:
-        return error
+        return "Sign-in error"
 
     if state is None or state != stored_state:
         return "State mismatch error"
 
     access_token, refresh_token, expires_in, start_time = callback(code)
-    return f'<p>Access token: {str(access_token)}</p><p>Refresh token: {str(refresh_token)}</p><p>Expires in: {str(expires_in)}</p><p>Token start time: {str(start_time)}</p>'
+    out = create_room(access_token, refresh_token, expires_in, start_time)
+    print(out)
+    return redirect("/")
 

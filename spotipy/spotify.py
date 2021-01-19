@@ -1,8 +1,9 @@
 # Handle all calls directly from app.py.
 
-from spotipy.spotify_api import search, get_audio_features
+from spotipy.spotify_api import search, get_audio_features, create_playlist, get_user_id
 from spotipy.spotify_helper import format_emotion_data, prune_audio_features
 from spotipy.spotify_auth import authorization_code, get_access_token
+from objects.room import Room
 
 # Params:   azure_cognitive emotion JSON for one person
 #           n number of recommendations to return
@@ -52,3 +53,17 @@ def login():
 
 def callback(code):
     return get_access_token(code)
+
+def create_room(access_token, refresh_token, expires_in, start_time):
+    
+    # TEMP: set-up room code (will probably auto-fill when added to database)
+    room_id = 1001
+
+    user_id = get_user_id(access_token)
+
+    # Create playlist for the room.
+    playlist_id, playlist_uri = create_playlist(access_token, user_id, room_id)
+
+    room = Room(room_id, user_id, access_token, refresh_token, playlist_id, playlist_uri)
+
+    return room

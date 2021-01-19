@@ -2,6 +2,7 @@
 
 import requests
 import time
+import json
 from spotipy.spotify_auth import client_credientials
 
 ## Spotify calls not requiring user sign in ##
@@ -59,17 +60,11 @@ def get_audio_features(track_ids):
     # Return spotify results as json object
     return res
 
-## Spotify calls requiring user sign in (not used) ##
-## https://developer.spotify.com/documentation/web-api/reference/player/ ##
+## https://developer.spotify.com/documentation/web-api/reference-beta/#endpoint-get-current-users-profile
+def get_user_id(token):
+    global BASE_API_URL
 
-# Global variables 
-BASE_PLAYER_URL = f'{BASE_API_URL}/me/player'
-
-# Get info about the current user's devices
-def user_player_devices(token):
-    global BASE_PLAYER_URL
-
-    url = f'{BASE_PLAYER_URL}/devices'
+    url = f'{BASE_API_URL}/me'
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -77,78 +72,29 @@ def user_player_devices(token):
     }
     res = requests.get(url, headers=headers).json()
 
-    return res
+    return res['id']
 
-# Transfer a user's playback to devices
-def change_player_devices(token, devices):
-    global BASE_PLAYER_URL
 
-    url = f'{BASE_PLAYER_URL}/'
+## Spotify playlist API calls ##
+## https://developer.spotify.com/documentation/web-api/reference-beta/#category-playlists
+
+# Create a playlist
+def create_playlist(token, user_id, room_id):
+    global BASE_API_URL
+
+    url = f'{BASE_API_URL}/users/{user_id}/playlists'
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
     payload = {
-        'device_ids': devices,
-        'play': True
+        'name': f'CVDJ Room #{room_id} Playlist',
+        'public': True,
+        'collaborative': False,
+        'description': None
     }
-    res = requests.get(url, headers=headers, data=payload).json()
+    res = requests.post(url, headers=headers, data=json.dumps(payload)).json()
 
-    return res
-
-# Add a track to queue
-def add_to_queue(token, track_uri):
-    global BASE_PLAYER_URL
-
-    url = f'{BASE_PLAYER_URL}/queue?uri={track_uri}'
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {token}'
-    }
-    res = requests.post(url, headers=headers).json()
-
-    return res
-
-# Start/resume playback
-def play(token):
-    global BASE_PLAYER_URL
-
-    url = f'{BASE_PLAYER_URL}/play'
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {token}'
-    }
-    res = requests.put(url, headers=headers).json()
-
-    return res
-
-# Pause playback
-def pause(token):
-    global BASE_PLAYER_URL
-
-    url = f'{BASE_PLAYER_URL}/pause'
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {token}'
-    }
-    res = requests.put(url, headers=headers).json()
-
-    return res
-
-# Skip to next track
-def next_track(token):
-    global BASE_PLAYER_URL
-
-    url = 'f{BASE_PLAYER_URL}/next'
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {token}'
-    }
-    res = requests.post(url, headers=headers).json()
-
-    return res
+    # Return playlist ID and playlist URI
+    return res['id'], res['uri']

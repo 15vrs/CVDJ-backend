@@ -35,7 +35,7 @@ def authorization_code():
     for _ in range(16):
         state += random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
 
-    scope = 'user-read-playback-state user-modify-playback-state'
+    scope = 'user-read-playback-state user-modify-playback-state streaming user-read-email user-read-private playlist-modify-private playlist-modify-public'
 
     query_dict = {
         'client_id': CLIENT_ID,
