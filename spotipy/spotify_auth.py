@@ -13,7 +13,7 @@ REDIRECT_URI = 'http://127.0.0.1:5000/callback/'
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 AUTHORIZE_URL = 'https://accounts.spotify.com/authorize'
 
-# Client credential flow
+## Client credential flow
 def client_credientials():
     global CLIENT_ID, CLIENT_SECRET, TOKEN_URL
 
@@ -27,7 +27,7 @@ def client_credientials():
 
     return res_data['access_token'], res_data['expires_in'], time.time()
 
-# Authorization code flow
+## Authorization code flow
 def authorization_code():
     global CLIENT_ID, REDIRECT_URI, AUTHORIZE_URL
 
@@ -63,9 +63,8 @@ def get_access_token(code):
 
     access_token = res_data['access_token']
     refresh_token = res_data['refresh_token']
-    expires_in = res_data['expires_in']
 
-    return access_token, refresh_token, expires_in, time.time()
+    return access_token, refresh_token, time.time()
 
 def refresh_access_token(refresh_token):
     global CLIENT_ID, CLIENT_SECRET, TOKEN_URL
@@ -79,6 +78,5 @@ def refresh_access_token(refresh_token):
     res_data = res.json()
 
     access_token = res_data['access_token']
-    expires_in = res_data['expires_in']
 
-    return access_token, expires_in, time.time()
+    return access_token, time.time()

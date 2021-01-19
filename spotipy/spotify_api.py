@@ -60,7 +60,10 @@ def get_audio_features(track_ids):
     # Return spotify results as json object
     return res
 
+## Spotify API calls requiring user sign-in ##
+## https://developer.spotify.com/documentation/web-api/reference-beta/#category-playlists
 ## https://developer.spotify.com/documentation/web-api/reference-beta/#endpoint-get-current-users-profile
+
 def get_user_id(token):
     global BASE_API_URL
 
@@ -73,10 +76,6 @@ def get_user_id(token):
     res = requests.get(url, headers=headers).json()
 
     return res['id']
-
-
-## Spotify playlist API calls ##
-## https://developer.spotify.com/documentation/web-api/reference-beta/#category-playlists
 
 # Create a playlist
 def create_playlist(token, user_id, room_id):

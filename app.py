@@ -1,6 +1,8 @@
 from flask import Flask, request, redirect, make_response
 import time
 
+from flask.json import jsonify
+
 # Calls to external services
 from spotipy.spotify import track_recommendations, login, callback, create_room
 from azure_cognitive import emotion
@@ -73,8 +75,15 @@ def spotify_callback():
     if state is None or state != stored_state:
         return "State mismatch error"
 
-    access_token, refresh_token, expires_in, start_time = callback(code)
-    out = create_room(access_token, refresh_token, expires_in, start_time)
-    print(out)
-    return redirect("/")
+    # If there is no sign in error, create and return a new room.
+    access_token, refresh_token, start_time = callback(code)
+    out = create_room(access_token, refresh_token, start_time)
+    
+    return jsonify(
+        room_code = out.room_number,
+        access_token = out.access_token,
+        refresh_token = out.refresh_token,
+        start_time = out.start_time,
+        playlist_uri = out.playlist_uri
+    )
 

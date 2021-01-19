@@ -47,23 +47,23 @@ def track_recommendations(emotion_json, n):
     
     return tracks[:n]
 
-# Logging a user in
+# Logging a user in.
 def login():
     return authorization_code()
 
 def callback(code):
     return get_access_token(code)
 
-def create_room(access_token, refresh_token, expires_in, start_time):
+# Create room.
+def create_room(access_token, refresh_token, start_time):
     
     # TEMP: set-up room code (will probably auto-fill when added to database)
     room_id = 1001
 
+    # Create playlist for the room creator.
     user_id = get_user_id(access_token)
-
-    # Create playlist for the room.
     playlist_id, playlist_uri = create_playlist(access_token, user_id, room_id)
 
-    room = Room(room_id, user_id, access_token, refresh_token, playlist_id, playlist_uri)
-
+    # Create and return a new room object to the FE.
+    room = Room(room_id, user_id, access_token, refresh_token, start_time, playlist_id, playlist_uri)
     return room
