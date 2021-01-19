@@ -19,6 +19,7 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
   return response
+
 @app.route("/")
 def home_page():
     return "CVDJ!"
@@ -61,7 +62,7 @@ def spotify_track_recommendations_test():
     return names
 
 # Create Room forces spotify premium user to log in.
-@app.route("/create_room")
+@app.route("/create_room", methods=['POST'])
 def spotify_login():
     url, cookies = login()
 
@@ -69,6 +70,7 @@ def spotify_login():
     res.set_cookie('spotify_auth_state', cookies)
 
     return res
+
 @app.route("/callback/")
 def spotify_callback():
     error = request.args.get('error')
