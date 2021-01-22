@@ -1,11 +1,13 @@
-import json
-import requests
-from flask import jsonify
-from azure.cognitiveservices.vision.face import FaceClient
-from msrest.authentication import CognitiveServicesCredentials
-import glob
 import base64
+import glob
+import json
 from io import BytesIO
+
+import requests
+from azure.cognitiveservices.vision.face import FaceClient
+from flask import jsonify
+from msrest.authentication import CognitiveServicesCredentials
+
 
 # Azure properties
 SUBSCRIPTION_KEY = 'a7f97fe3646d49dea6a12ede3c1c7804'
@@ -16,10 +18,6 @@ face_client = FaceClient(RESOURCE_ENDPOINT, CognitiveServicesCredentials(SUBSCRI
 
 # Get emotion from a single image provided as a url
 def emotion(image_url):
-    # store_image(image_url)
-    # response = requests.get('http://localhost:4200/82db2fd4-5b7d-4040-86eb-8a92e97b1c98')
-    # print(response)
-
     headers = {'Ocp-Apim-Subscription-Key': SUBSCRIPTION_KEY}
     params = {
         'detectionModel': 'detection_01',
@@ -27,19 +25,24 @@ def emotion(image_url):
         'returnFaceId': 'true'
     }
     response = requests.post(FACE_URL, params=params, headers=headers, json={"url": image_url}, verify=False)
-    return jsonify(response.json())
+    json_response = extract_json(response.text)
+    j = json.loads(json_response)
+    return j["faceAttributes"]
 
-def emotion_with_stream():
-    # test_image = glob.glob('test-url.txt')
+
+def extract_json(data):
+    return data[1:-1]
+
+# Will be used to handle image stream from front-end
+def emotion_with_stream(test):
+    print(test)
     with open('test-url.txt', 'r') as file:
         data = file.read()
-    
+
     with open('test.png', 'wb') as file:
         file.write(base64.decodebytes(data))
-    # image = open(test_image[0], 'r+b')
-    # img = data.encode('utf-8')
     print(type(data))
     tt = data.encode('utf-8')
-    # bytes_img = base64.decodebytes(tt)
     face = face_client.face.detect_with_stream(tt, detectionModel='detection_02')
     print(face)
+
