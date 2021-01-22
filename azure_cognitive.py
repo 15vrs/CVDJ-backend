@@ -43,9 +43,4 @@ def emotion_with_stream(test):
     print(type(data))
     tt = data.encode('utf-8')
     face = face_client.face.detect_with_stream(tt, detectionModel='detection_02')
-<<<<<<< HEAD
     print(face)
-=======
-    print(face)
-
->>>>>>> /emotion now return only emotion data + method to handle stream input image
