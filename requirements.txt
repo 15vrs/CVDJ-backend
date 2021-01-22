@@ -3,3 +3,4 @@ requests
 cognitive-face
 face
 azure-cognitiveservices-vision-computervision
+azure.cognitiveservices.vision.face
