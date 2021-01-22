@@ -1,7 +1,6 @@
 import json
 import requests
 from flask import jsonify
-from store_image import store_image
 from azure.cognitiveservices.vision.face import FaceClient
 from msrest.authentication import CognitiveServicesCredentials
 import glob
