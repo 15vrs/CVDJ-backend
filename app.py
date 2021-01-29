@@ -29,7 +29,11 @@ def user_join(room_code):
     uid = request.form.get('userId')
     rooms.append(room_code)
     user_ids[uid] = room_code
-    return "You're in."
+    return "{" \
+           "\"roomId\": \"room1\"," \
+           "\"userId\": \"user1\","\
+           "\"playlistUri\": \"asdfghjkl\""\
+           "}"
 
 # Creating a new CVDJ room with a user that is signed into Spotify.
 @app.route("/create_room/<user_id>")
