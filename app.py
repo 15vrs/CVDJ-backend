@@ -61,7 +61,7 @@ def spotify_callback():
     return f"{cvdj_user_id}"
 
 # Call to Face API for emotion (test).
-@app.route("/emotion")
+@app.route("/emotion", methods=['POST'])
 def determine_emotion():
     return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
 
