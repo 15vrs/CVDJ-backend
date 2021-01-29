@@ -31,23 +31,18 @@ def client_credientials():
 def authorization_code():
     global CLIENT_ID, REDIRECT_URI, AUTHORIZE_URL
 
-    state = ''
-    for _ in range(16):
-        state += random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
-
     scope = 'user-read-playback-state user-modify-playback-state streaming user-read-email user-read-private playlist-modify-private playlist-modify-public'
 
     query_dict = {
         'client_id': CLIENT_ID,
         'response_type': 'code',
         'redirect_uri': REDIRECT_URI,
-        'state': state,
         'scope': scope,
         'show_dialog': False
     }
     query_string = f'{AUTHORIZE_URL}?{urlencode(query=query_dict)}'
 
-    return query_string, state
+    return query_string
 
 def get_access_token(code):
     global CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, TOKEN_URL

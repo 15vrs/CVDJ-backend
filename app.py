@@ -42,25 +42,17 @@ def create_room(user_id):
 # Logging a user into Spotify to obtain access to their Spotify account.
 @app.route("/login")
 def spotify_login():
-    url, cookies = login()
-
+    url = login()
     res = make_response(redirect(url))
-    res.set_cookie('spotify_auth_state', cookies)
-
     return res
 
 @app.route("/callback/")
 def spotify_callback():
     error = request.args.get('error')
     code = request.args.get('code')
-    state = request.args.get('state')
-    stored_state = request.cookies.get('spotify_auth_state')
 
     if error is not None:
         return error
-
-    if state is None or state != stored_state:
-        return "State mismatch error"
 
     cvdj_user_id = callback(code)
     if cvdj_user_id is 0:
