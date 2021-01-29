@@ -8,7 +8,6 @@ from azure.cognitiveservices.vision.face import FaceClient
 from flask import jsonify
 from msrest.authentication import CognitiveServicesCredentials
 
-
 # Azure properties
 SUBSCRIPTION_KEY = 'a7f97fe3646d49dea6a12ede3c1c7804'
 RESOURCE_ENDPOINT = 'https://test498.cognitiveservices.azure.com'
@@ -45,4 +44,3 @@ def emotion_with_stream(test):
     tt = data.encode('utf-8')
     face = face_client.face.detect_with_stream(tt, detectionModel='detection_02')
     print(face)
-
