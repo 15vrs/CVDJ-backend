@@ -1,3 +1,7 @@
+DROP TABLE IF EXISTS rooms;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS song_history;
+
 CREATE TABLE IF NOT EXISTS rooms(
     roomId INTEGER PRIMARY KEY,
     spotifyPlaylistId TEXT,

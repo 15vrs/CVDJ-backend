@@ -5,7 +5,7 @@ from flask.json import jsonify
 
 # Calls to external services
 from spotipy.spotify import track_recommendations, login, callback, new_room
-from azure_cognitive import emotion
+from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
 
@@ -71,10 +71,13 @@ def spotify_callback():
 # Call to Face API for emotion (test).
 @app.route("/emotion")
 def determine_emotion():
-    # visit https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg to see image
     return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
 
-# Calls to spotify code (test).
+@app.route("/emotion_with_stream")
+def determine_emotion_from_stream():
+    return emotion_with_stream()
+
+# Spotify
 @app.route("/test/spotifyrecs")
 def spotify_track_recommendations_test():
     start_time = time.time()
