@@ -4,7 +4,7 @@ import time
 from flask.json import jsonify
 
 # Calls to external services
-from spotipy.spotify import track_recommendations, login, callback, new_room
+from spotipy.spotify import track_recommendations, callback, new_room
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
@@ -40,11 +40,11 @@ def create_room(user_id):
     return f"{rsp[0]}, {rsp[1]}"
 
 # Logging a user into Spotify to obtain access to their Spotify account.
-@app.route("/login")
-def spotify_login():
-    url = login()
-    res = make_response(redirect(url))
-    return res
+# @app.route("/login")
+# def spotify_login():
+#     url = login()
+#     res = make_response(redirect(url))
+#     return res
 
 @app.route("/callback/")
 def spotify_callback():
