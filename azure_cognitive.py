@@ -7,8 +7,7 @@ import requests
 from azure.cognitiveservices.vision.face import FaceClient
 from flask import jsonify
 from msrest.authentication import CognitiveServicesCredentials
-from database.store_image import insert_BLOB, update_user_emotions, update_BLOB
-from database.retrieve_image import read_image_BLOB_data
+from database.store_emotion_data import update_user_emotions
 
 # Azure properties
 SUBSCRIPTION_KEY = 'a7f97fe3646d49dea6a12ede3c1c7804'
