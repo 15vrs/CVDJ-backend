@@ -58,4 +58,4 @@ def save_emotion_data(userId, data):
         "sadness": data.sadness,
         "surprise": data.surprise
     }
-    update_user_emotions(userId, data)
+    update_user_emotions(userId, emotion)
