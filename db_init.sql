@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS rooms(
     roomId INTEGER PRIMARY KEY,
     spotifyPlaylistId TEXT,
-    spotifyPlaylistURI TEXT,
     averageEmotion NVARCHAR(10)
 );
 
 CREATE TABLE IF NOT EXISTS users(
     userId INTEGER PRIMARY KEY,
     roomId INTEGER,
+    emotionData TEXT,
     lastVideoStill BLOB,
     spotifyAccessToken TEXT,
     spotifyRefreshToken TEXT,

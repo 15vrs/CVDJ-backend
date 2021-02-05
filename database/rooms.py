@@ -7,9 +7,9 @@ def add_new_room():
     room_id = 0
 
     try:
-        query = """ INSERT INTO rooms (spotifyPlaylistId, spotifyPlaylistURI, averageEmotion)
-                    VALUES (?, ?, ?); """
-        params = (None, None, None)
+        query = """ INSERT INTO rooms (spotifyPlaylistId, averageEmotion)
+                    VALUES (?, ?); """
+        params = (None, None)
 
         cursor.execute(query, params)
         room_id = cursor.lastrowid
@@ -24,15 +24,15 @@ def add_new_room():
         conn.close()
         return room_id
 
-def add_playlist_to_room(playlist_id, playlist_uri, room_id):
+def add_playlist_to_room(playlist_id, room_id):
     conn = sqlite3.connect('cvdj.db')
     cursor = conn.cursor()
 
     try:
         query = """ UPDATE rooms
-                    SET spotifyPlaylistId = ?, spotifyPlaylistURI = ?
+                    SET spotifyPlaylistId = ?
                     WHERE roomId = ?; """
-        params = (playlist_id, playlist_uri, room_id)
+        params = (playlist_id, room_id)
 
         cursor.execute(query, params)
         conn.commit()

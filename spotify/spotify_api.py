@@ -3,7 +3,7 @@
 import requests
 import time
 import json
-from spotipy.spotify_auth import client_credientials
+from spotify.spotify_auth import client_credientials
 
 ## Spotify calls not requiring user sign in ##
 ## https://developer.spotify.com/documentation/web-api/reference/search/search/
@@ -95,5 +95,5 @@ def create_playlist(token, user_id, room_id):
     }
     res = requests.post(url, headers=headers, data=json.dumps(payload)).json()
 
-    # Return playlist ID and playlist URI
-    return res['id'], res['uri']
+    # Return playlist ID
+    return res['id']

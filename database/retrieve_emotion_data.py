@@ -29,5 +29,3 @@ def read_image_BLOB_data(userId):
         if (conn):
             conn.close()
             print("Db connection is closed.")
-
-read_image_BLOB_data(200)
