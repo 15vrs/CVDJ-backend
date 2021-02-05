@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask.json import jsonify
 
 # Calls to external services
-from spotify.spotify import track_recommendations, login, callback, new_room
+from spotify.spotify import track_recommendations, callback, new_room
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
@@ -32,10 +32,9 @@ def user_join(room_code):
 # Creating a new CVDJ room with a user that is signed into Spotify.
 @app.route('/create_room/<user_id>', methods=['GET'])
 def create_room(user_id):
-    rsp = new_room(user_id)
-    if rsp == 0:
+    room = new_room(user_id)
+    if room == 0:
         return "Error creating room."
-    return f"{rsp[0]}, {rsp[1]}"
 
     rsp = {
         'roomId': f'{room[0]}',
