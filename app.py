@@ -32,16 +32,10 @@ def user_join(room_code):
 # Creating a new CVDJ room with a user that is signed into Spotify.
 @app.route('/create_room/<user_id>', methods=['GET'])
 def create_room(user_id):
-<<<<<<< HEAD
     rsp = new_room(user_id)
     if rsp == 0:
         return "Error creating room."
     return f"{rsp[0]}, {rsp[1]}"
-=======
-    room = new_room(user_id)
-    if room is 0:
-        return 'Error creating room.'
->>>>>>> 5597f5317fbbeb224c26198af03d7c9247778192
 
     rsp = {
         'roomId': f'{room[0]}',
@@ -59,23 +53,13 @@ def spotify_callback():
         return error
 
     cvdj_user_id = callback(code)
-<<<<<<< HEAD
     if cvdj_user_id == 0:
         return "Error creating and adding user to DB."
-=======
-    if cvdj_user_id is 0:
-        return 'Error creating and adding user to DB.'
->>>>>>> 5597f5317fbbeb224c26198af03d7c9247778192
     
     return f'{cvdj_user_id}'
 
-<<<<<<< HEAD
 # Call to Face API with image to get emotion data
 @app.route("/emotion", methods=['POST'])
-=======
-# Call to Face API for emotion (test).
-@app.route('/emotion', methods=['POST'])
->>>>>>> 5597f5317fbbeb224c26198af03d7c9247778192
 def determine_emotion():
     if (request.data):
         return emotion_with_stream(request.data)
