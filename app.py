@@ -2,11 +2,7 @@ from flask import Flask, request
 from flask.json import jsonify
 
 # Calls to external services
-<<<<<<< HEAD
 from spotify.spotify import track_recommendations, login, callback, new_room
-=======
-from spotipy.spotify import track_recommendations, callback, new_room
->>>>>>> 5597f5317fbbeb224c26198af03d7c9247778192
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
