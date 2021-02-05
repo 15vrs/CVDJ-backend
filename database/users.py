@@ -1,7 +1,8 @@
+import json
 import sqlite3
 from sqlite3 import Error
 
-DEFAULT_EMOTION_JSON = {
+DEFAULT_EMOTION_JSON = json.dumps({
         "anger": 0.0,
         "contempt": 0.0,
         "disgust": 0.0,
@@ -10,9 +11,9 @@ DEFAULT_EMOTION_JSON = {
         "neutral": 1.0,
         "sadness": 0.0,
         "surprise": 0.0
-    }
+    })
 
-def add_new_user(access_token, refresh_token, start_time):
+def add_new_user(): # Only called by add_new_creator().
     global DEFAULT_EMOTION_JSON
     
     conn = sqlite3.connect('cvdj.db')
@@ -20,9 +21,9 @@ def add_new_user(access_token, refresh_token, start_time):
     user_id = 0
 
     try:
-        query = """ INSERT INTO users (spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime, emotionData)
-                    VALUES (?, ?, ?); """
-        params = (access_token, refresh_token, start_time, DEFAULT_EMOTION_JSON)
+        query = """ INSERT INTO users (emotionData)
+                    VALUES (?); """
+        params = (DEFAULT_EMOTION_JSON, )
 
         cursor.execute(query, params)
         user_id = cursor.lastrowid
@@ -37,7 +38,7 @@ def add_new_user(access_token, refresh_token, start_time):
         conn.close()
         return user_id
 
-def add_user_to_room(room_id, user_id):
+def add_user_to_room(room_id, user_id): # Only called by add_new_creator().
     conn = sqlite3.connect('cvdj.db')
     cursor = conn.cursor()
 
@@ -58,40 +59,22 @@ def add_user_to_room(room_id, user_id):
         cursor.close()
         conn.close()
 
-def get_user_spotify_tokens(user_id):
+def add_new_user_to_room(room_id): # Join room.
+    global DEFAULT_EMOTION_JSON
+    
     conn = sqlite3.connect('cvdj.db')
     cursor = conn.cursor()
-    rsp = ()
+    user_id = 0
 
     try:
-        query = """ SELECT spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime FROM users
-                    WHERE userId = ?; """
-        params = (user_id, )
+        query = """ INSERT INTO users (roomId, emotionData)
+                    VALUES (?, ?); """
+        params = (room_id, DEFAULT_EMOTION_JSON, )
 
         cursor.execute(query, params)
-        rsp = cursor.fetchone()
-
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
-        return rsp
-
-def update_spotify_tokens(access_token, start_time, user_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
-
-    try:
-        query = """ UPDATE users
-                    SET spotifyAccessToken = ?, spotifyAccessTime = ?
-                    WHERE userId = ?; """
-        params = (access_token, start_time, user_id)
-
-        cursor.execute(query, params)
+        user_id = cursor.lastrowid
         conn.commit()
-        print("Refreshed spotify access tokens.")
+        print("New user added to table")
 
     except Error as e:
         print(e)
@@ -99,3 +82,4 @@ def update_spotify_tokens(access_token, start_time, user_id):
     finally:
         cursor.close()
         conn.close()
+        return user_id

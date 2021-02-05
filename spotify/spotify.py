@@ -4,7 +4,8 @@ import time
 from spotify.spotify_api import create_playlist, get_user_id, search, get_audio_features
 from spotify.spotify_helper import format_emotion_data, prune_audio_features
 from spotify.spotify_auth import get_access_token, refresh_access_token
-from database.users import add_new_user, add_user_to_room, get_user_spotify_tokens, update_spotify_tokens
+from database.users import add_new_user, add_new_user_to_room, add_user_to_room
+from database.creators import add_new_creator, add_creator_to_room, get_user_spotify_tokens, update_spotify_tokens
 from database.rooms import add_new_room, add_playlist_to_room
 
 # Params:   azure_cognitive emotion JSON for one person
@@ -53,13 +54,18 @@ def track_recommendations(emotion_json, n):
 
 # Logging a user in.
 def callback(code):
+    user_id = add_new_user()
     access_token, refresh_token, start_time = get_access_token(code)
-    user_id = add_new_user(access_token, refresh_token, start_time)
+    add_new_creator(user_id, access_token, refresh_token, start_time)
+    return user_id
+
+# Joining a room.
+def join_room(room_id):
+    user_id = add_new_user_to_room(room_id)
     return user_id
 
 # Creating a new room.
 def new_room(user_id):
-
     # Get the user from users table, and make sure access refresh time stuff is not null.
     spotify_tokens = get_user_spotify_tokens(user_id) #DB
     if spotify_tokens is None:
@@ -77,6 +83,7 @@ def new_room(user_id):
     if room_id is 0:
         print("Error creating room in database.")
         return 0
+    add_creator_to_room(room_id, user_id)
     add_user_to_room(room_id, user_id) #DB
 
     # Refresh the token if required, and update in DB.

@@ -4,21 +4,21 @@ CREATE TABLE IF NOT EXISTS rooms(
     averageEmotion NVARCHAR(10)
 );
 
-CREATE TABLE IF NOT EXISTS users(
-    userId INTEGER PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS creators(
+    creatorId INTEGER PRIMARY KEY,
+    userId INTEGER NOT NULL,
     roomId INTEGER,
-    emotionData TEXT,
-    lastVideoStill BLOB,
     spotifyAccessToken TEXT,
     spotifyRefreshToken TEXT,
     spotifyAccessTime DATETIME,
+    FOREIGN KEY (userId) REFERENCES users (userId),
     FOREIGN KEY (roomId) REFERENCES rooms (roomId)
 );
 
-CREATE TABLE IF NOT EXISTS song_history(
-    id INTEGER PRIMARY KEY,
-    roomId INTEGER NOT NULL,
-    songId NVARCHAR(50) NOT NULL,
-    timePlayed DATETIME,
+CREATE TABLE IF NOT EXISTS users(
+    userId INTEGER PRIMARY KEY,
+    roomId INTEGER,
+    lastVideoStill BLOB,
+    emotionData TEXT,
     FOREIGN KEY (roomId) REFERENCES rooms (roomId)
 );
