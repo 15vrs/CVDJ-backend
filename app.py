@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, make_response
+from flask import Flask, request
 import time
 
 from flask.json import jsonify
@@ -37,15 +37,14 @@ def create_room(user_id):
     rsp = new_room(user_id)
     if rsp is 0:
         return "Error creating room."
-    return f"{rsp[0]}, {rsp[1]}"
+
+    ret = {
+        'roomId': f"{rsp[0]}",
+        'playlistUri': f"{rsp[1]}"
+    }
+    return jsonify(ret)
 
 # Logging a user into Spotify to obtain access to their Spotify account.
-# @app.route("/login")
-# def spotify_login():
-#     url = login()
-#     res = make_response(redirect(url))
-#     return res
-
 @app.route("/callback/")
 def spotify_callback():
     error = request.args.get('error')

@@ -1,6 +1,5 @@
 # Handle all calls directly from app.py.
 
-from os import access
 import time
 from spotipy.spotify_api import create_playlist, get_user_id, search, get_audio_features
 from spotipy.spotify_helper import format_emotion_data, prune_audio_features
@@ -53,10 +52,7 @@ def track_recommendations(emotion_json, n):
     return tracks[:n]
 
 # Logging a user in.
-# def login():
-#     return authorization_code()
 def callback(code):
-    print("reached")
     access_token, refresh_token, start_time = get_access_token(code)
     user_id = add_new_user(access_token, refresh_token, start_time)
     return user_id

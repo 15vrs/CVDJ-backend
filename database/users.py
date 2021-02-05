@@ -53,7 +53,7 @@ def get_user_spotify_tokens(user_id):
     try:
         query = """ SELECT spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime FROM users
                     WHERE userId = ?; """
-        params = (user_id)
+        params = (user_id, )
 
         cursor.execute(query, params)
         rsp = cursor.fetchone()
