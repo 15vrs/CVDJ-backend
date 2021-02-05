@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS rooms(
     roomId INTEGER PRIMARY KEY,
     spotifyPlaylistId TEXT,
-    spotifyPlaylistURI TEXT,
     averageEmotion NVARCHAR(10)
 );
 

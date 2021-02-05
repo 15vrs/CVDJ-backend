@@ -1,15 +1,28 @@
 import sqlite3
 from sqlite3 import Error
 
+DEFAULT_EMOTION_JSON = {
+        "anger": 0.0,
+        "contempt": 0.0,
+        "disgust": 0.0,
+        "fear": 0.0,
+        "happiness": 0.0,
+        "neutral": 1.0,
+        "sadness": 0.0,
+        "surprise": 0.0
+    }
+
 def add_new_user(access_token, refresh_token, start_time):
+    global DEFAULT_EMOTION_JSON
+    
     conn = sqlite3.connect('cvdj.db')
     cursor = conn.cursor()
     user_id = 0
 
     try:
-        query = """ INSERT INTO users (spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime)
+        query = """ INSERT INTO users (spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime, emotionData)
                     VALUES (?, ?, ?); """
-        params = (access_token, refresh_token, start_time)
+        params = (access_token, refresh_token, start_time, DEFAULT_EMOTION_JSON)
 
         cursor.execute(query, params)
         user_id = cursor.lastrowid

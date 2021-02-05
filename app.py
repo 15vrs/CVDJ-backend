@@ -7,9 +7,6 @@ from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
 
-rooms = []
-user_ids = {}
-
 # fix for CORS issue
 @app.after_request
 def after_request(response):
@@ -22,11 +19,9 @@ def after_request(response):
 def home_page():
     return 'CVDJ!'
 
-@app.route('/join/<room_code>', methods=['POST'])
+@app.route('/join/<room_code>', methods=['GET'])
 def user_join(room_code):
-    uid = request.form.get('userId')
-    rooms.append(room_code)
-    user_ids[uid] = room_code
+    # Return userId and playlistUri.
     return "You're in."
 
 # Creating a new CVDJ room with a user that is signed into Spotify.

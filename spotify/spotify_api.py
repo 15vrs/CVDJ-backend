@@ -95,5 +95,5 @@ def create_playlist(token, user_id, room_id):
     }
     res = requests.post(url, headers=headers, data=json.dumps(payload)).json()
 
-    # Return playlist ID and playlist URI
-    return res['id'], res['uri']
+    # Return playlist ID
+    return res['id']
