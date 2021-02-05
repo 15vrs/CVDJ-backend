@@ -1,10 +1,15 @@
 # Handle all calls directly from app.py.
 
-from os import access
 import time
+<<<<<<< HEAD:spotify/spotify.py
 from spotify.spotify_api import create_playlist, get_user_id, search, get_audio_features
 from spotify.spotify_helper import format_emotion_data, prune_audio_features
 from spotify.spotify_auth import authorization_code, get_access_token, refresh_access_token
+=======
+from spotipy.spotify_api import create_playlist, get_user_id, search, get_audio_features
+from spotipy.spotify_helper import format_emotion_data, prune_audio_features
+from spotipy.spotify_auth import get_access_token, refresh_access_token
+>>>>>>> 5597f5317fbbeb224c26198af03d7c9247778192:spotipy/spotify.py
 from database.users import add_new_user, add_user_to_room, get_user_spotify_tokens, update_spotify_tokens
 from database.rooms import add_new_room, add_playlist_to_room
 
@@ -53,8 +58,6 @@ def track_recommendations(emotion_json, n):
     return tracks[:n]
 
 # Logging a user in.
-def login():
-    return authorization_code()
 def callback(code):
     access_token, refresh_token, start_time = get_access_token(code)
     user_id = add_new_user(access_token, refresh_token, start_time)
