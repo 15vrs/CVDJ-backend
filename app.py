@@ -4,7 +4,7 @@ import time
 from flask.json import jsonify
 
 # Calls to external services
-from spotipy.spotify import track_recommendations, login, callback, new_room
+from spotify.spotify import track_recommendations, login, callback, new_room
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
@@ -35,7 +35,7 @@ def user_join(room_code):
 @app.route("/create_room/<user_id>")
 def create_room(user_id):
     rsp = new_room(user_id)
-    if rsp is 0:
+    if rsp == 0:
         return "Error creating room."
     return f"{rsp[0]}, {rsp[1]}"
 
@@ -55,14 +55,16 @@ def spotify_callback():
         return error
 
     cvdj_user_id = callback(code)
-    if cvdj_user_id is 0:
+    if cvdj_user_id == 0:
         return "Error creating and adding user to DB."
     
     return f"{cvdj_user_id}"
 
-# Call to Face API for emotion (test).
+# Call to Face API with image to get emotion data
 @app.route("/emotion", methods=['POST'])
 def determine_emotion():
+    if (request.data):
+        return emotion_with_stream(request.data)
     return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
 
 @app.route("/emotion_with_stream")

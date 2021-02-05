@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS rooms(
 CREATE TABLE IF NOT EXISTS users(
     userId INTEGER PRIMARY KEY,
     roomId INTEGER,
+    emotionData TEXT,
     lastVideoStill BLOB,
     spotifyAccessToken TEXT,
     spotifyRefreshToken TEXT,

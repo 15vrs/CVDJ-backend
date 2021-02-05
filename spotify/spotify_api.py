@@ -3,7 +3,7 @@
 import requests
 import time
 import json
-from spotipy.spotify_auth import client_credientials
+from spotify.spotify_auth import client_credientials
 
 ## Spotify calls not requiring user sign in ##
 ## https://developer.spotify.com/documentation/web-api/reference/search/search/

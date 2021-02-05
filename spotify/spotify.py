@@ -2,9 +2,9 @@
 
 from os import access
 import time
-from spotipy.spotify_api import create_playlist, get_user_id, search, get_audio_features
-from spotipy.spotify_helper import format_emotion_data, prune_audio_features
-from spotipy.spotify_auth import authorization_code, get_access_token, refresh_access_token
+from spotify.spotify_api import create_playlist, get_user_id, search, get_audio_features
+from spotify.spotify_helper import format_emotion_data, prune_audio_features
+from spotify.spotify_auth import authorization_code, get_access_token, refresh_access_token
 from database.users import add_new_user, add_user_to_room, get_user_spotify_tokens, update_spotify_tokens
 from database.rooms import add_new_room, add_playlist_to_room
 
