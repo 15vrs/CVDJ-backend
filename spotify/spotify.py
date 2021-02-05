@@ -86,7 +86,7 @@ def new_room(user_id):
 
     # Get spotify user id and create playlist for room.
     spotify_user_id = get_user_id(access_token) #API
-    playlist_id, playlist_uri = create_playlist(access_token, spotify_user_id, room_id) #API
-    add_playlist_to_room(playlist_id, playlist_uri, room_id) #DB
+    playlist_id = create_playlist(access_token, spotify_user_id, room_id) #API
+    add_playlist_to_room(playlist_id, room_id) #DB
 
     return room_id, playlist_id
