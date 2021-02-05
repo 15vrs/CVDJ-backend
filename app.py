@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask.json import jsonify
 
 # Calls to external services
-from spotify.spotify import track_recommendations, callback, new_room
+from spotify.spotify import track_recommendations, callback, new_room, join_room
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
@@ -19,11 +19,6 @@ def after_request(response):
 def home_page():
     return 'CVDJ!'
 
-@app.route('/join/<room_code>', methods=['GET'])
-def user_join(room_code):
-    # Return userId and playlistUri.
-    return "You're in."
-
 # Creating a new CVDJ room with a user that is signed into Spotify.
 @app.route('/create_room/<user_id>', methods=['GET'])
 def create_room(user_id):
@@ -36,6 +31,14 @@ def create_room(user_id):
         'playlistUri': f'{room[1]}'
     }
     return jsonify(rsp)
+
+@app.route('/join/<room_code>', methods=['GET'])
+def user_join(room_code):
+    cvdj_user_id = join_room(room_code)
+    if cvdj_user_id == 0:
+        return "Error creating and adding user to DB."
+    
+    return f'{cvdj_user_id}'
 
 # Logging a user into Spotify to obtain access to their Spotify account.
 @app.route('/callback/', methods=['GET'])
