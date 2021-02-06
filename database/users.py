@@ -83,3 +83,24 @@ def add_new_user_to_room(room_id): # Join room.
         cursor.close()
         conn.close()
         return user_id
+
+def get_user_emotion(room_id):
+    conn = sqlite3.connect('cvdj.db')
+    cursor = conn.cursor()
+    rsp = ()
+
+    try:
+        query = """ SELECT emotionData FROM users
+                    WHERE roomId = ?; """
+        params = (room_id, )
+
+        cursor.execute(query, params)
+        rsp = cursor.fetchall()
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+        return [json.loads(row[0]) for row in rsp]

@@ -36,7 +36,7 @@ def extract_json(data):
 # Needs to have userId as an input
 def emotion_with_stream(data):
     userId = data['userId']
-    image = data['image']
+    image = data['face']
     stream = BytesIO(image)
     response = face_client.face.detect_with_stream(stream, return_face_id=True, return_face_attributes=['emotion'])
     for face in response:

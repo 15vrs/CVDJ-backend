@@ -42,7 +42,7 @@ def add_creator_to_room(room_id, user_id):
         cursor.close()
         conn.close()
 
-def get_user_spotify_tokens(creator_id):
+def get_user_spotify_tokens(user_id):
     conn = sqlite3.connect('cvdj.db')
     cursor = conn.cursor()
     rsp = ()
@@ -50,7 +50,7 @@ def get_user_spotify_tokens(creator_id):
     try:
         query = """ SELECT spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime FROM creators
                     WHERE userId = ?; """
-        params = (creator_id, )
+        params = (user_id, )
 
         cursor.execute(query, params)
         rsp = cursor.fetchone()
@@ -63,15 +63,57 @@ def get_user_spotify_tokens(creator_id):
         conn.close()
         return rsp
 
-def update_spotify_tokens(access_token, start_time, creator_id):
+def update_user_spotify_tokens(access_token, start_time, user_id):
     conn = sqlite3.connect('cvdj.db')
     cursor = conn.cursor()
 
     try:
         query = """ UPDATE creators
                     SET spotifyAccessToken = ?, spotifyAccessTime = ?
-                    WHERE creatorId = ?; """
-        params = (access_token, start_time, creator_id)
+                    WHERE userId = ?; """
+        params = (access_token, start_time, user_id)
+
+        cursor.execute(query, params)
+        conn.commit()
+        print("Refreshed spotify access tokens.")
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_room_spotify_tokens(room_id):
+    conn = sqlite3.connect('cvdj.db')
+    cursor = conn.cursor()
+    rsp = ()
+
+    try:
+        query = """ SELECT spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime FROM creators
+                    WHERE roomId = ?; """
+        params = (room_id, )
+
+        cursor.execute(query, params)
+        rsp = cursor.fetchone()
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+        return rsp
+
+def update_room_spotify_tokens(access_token, start_time, room_id):
+    conn = sqlite3.connect('cvdj.db')
+    cursor = conn.cursor()
+
+    try:
+        query = """ UPDATE creators
+                    SET spotifyAccessToken = ?, spotifyAccessTime = ?
+                    WHERE roomId = ?; """
+        params = (access_token, start_time, room_id)
 
         cursor.execute(query, params)
         conn.commit()

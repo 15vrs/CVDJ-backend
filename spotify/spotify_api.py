@@ -97,3 +97,36 @@ def create_playlist(token, user_id, room_id):
 
     # Return playlist ID
     return res['id']
+
+# Add track to playlist
+def add_track_to_playlist(token, track_uri, playlist_id):
+    global BASE_API_URL
+
+    url = f'{BASE_API_URL}/playlists/{playlist_id}/tracks'
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    payload = {
+        'uris': [track_uri]
+    }
+    requests.post(url, headers=headers, data=json.dumps(payload)).json()
+
+def get_playlist_tracks(token, playlist_id):
+    global BASE_API_URL
+
+    url = f'{BASE_API_URL}/playlists/{playlist_id}/tracks'
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    res = requests.get(url, headers=headers).json()
+    items = res['items']
+
+    track_ids = set()
+    for i in items:
+        if i['track'] is not None:
+            track_ids.add(i['track']['id'])
+    return track_ids
