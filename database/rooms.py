@@ -44,3 +44,27 @@ def add_playlist_to_room(playlist_id, room_id):
     finally:
         cursor.close()
         conn.close()
+
+def check_room_exists(room_id):
+    conn = sqlite3.connect('cvdj.db')
+    cursor = conn.cursor()
+    rsp = ()
+
+    try:
+        query = """ SELECT roomId FROM rooms
+                    WHERE roomId = ?; """
+        params = (room_id, )
+
+        cursor.execute(query, params)
+        rsp = cursor.fetchone()
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+        
+        if rsp is None:
+            return False
+        return True

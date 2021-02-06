@@ -6,7 +6,7 @@ from spotify.spotify_helper import format_emotion_data, prune_audio_features
 from spotify.spotify_auth import get_access_token, refresh_access_token
 from database.users import add_new_user, add_new_user_to_room, add_user_to_room
 from database.creators import add_new_creator, add_creator_to_room, get_user_spotify_tokens, update_spotify_tokens
-from database.rooms import add_new_room, add_playlist_to_room
+from database.rooms import add_new_room, add_playlist_to_room, check_room_exists
 
 # Params:   azure_cognitive emotion JSON for one person
 #           n number of recommendations to return
@@ -61,6 +61,10 @@ def callback(code):
 
 # Joining a room.
 def join_room(room_id):
+    check = check_room_exists(room_id)
+    if not check:
+        return -1
+
     user_id = add_new_user_to_room(room_id)
     return user_id
 

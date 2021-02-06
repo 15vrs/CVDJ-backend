@@ -37,7 +37,8 @@ def user_join(room_code):
     cvdj_user_id = join_room(room_code)
     if cvdj_user_id == 0:
         return "Error creating and adding user to DB."
-    
+    if cvdj_user_id == -1:
+        return "Room does not exist."
     return f'{cvdj_user_id}'
 
 # Logging a user into Spotify to obtain access to their Spotify account.
