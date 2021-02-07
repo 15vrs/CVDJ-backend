@@ -14,7 +14,7 @@ BEARER_TOKEN, EXPIRES_IN, START_TIME = client_credientials()
 BASE_API_URL = 'https://api.spotify.com/v1'
 
 # Search
-def search(emotion, offset):
+def search(emotion):
 
     # Check OAuth
     global BASE_API_URL, BEARER_TOKEN, EXPIRES_IN, START_TIME
@@ -22,20 +22,25 @@ def search(emotion, offset):
         BEARER_TOKEN, EXPIRES_IN, START_TIME = client_credientials()
 
     # Function variables
-    limit = 50
-    type = 'track'
+    # limit = 50
+    type = 'playlist'
 
     # Call to spotify API
-    search_url = f'{BASE_API_URL}/search?q={emotion}&type={type}&limit={limit}&offset={offset}'
+    search_url = f'{BASE_API_URL}/search?q={emotion}&type={type}'
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {BEARER_TOKEN}'
     }
     res = requests.get(search_url, headers=headers).json()
+    items = res['playlists']['items']
 
-    # Return a list of track ids.
-    return res
+    # Return a list of playlist IDs.
+    playlist_ids = []
+    for i in items:
+        if i['id'] is not None:
+            playlist_ids.append(i['id'])
+    return playlist_ids
 
 # Get audio features
 def get_audio_features(track_ids):
@@ -113,6 +118,7 @@ def add_track_to_playlist(token, track_uri, playlist_id):
     }
     requests.post(url, headers=headers, data=json.dumps(payload)).json()
 
+# Get the track ids that are on the given playlist.
 def get_playlist_tracks(token, playlist_id):
     global BASE_API_URL
 
@@ -125,8 +131,10 @@ def get_playlist_tracks(token, playlist_id):
     res = requests.get(url, headers=headers).json()
     items = res['items']
 
-    track_ids = set()
-    for i in items:
-        if i['track'] is not None:
-            track_ids.add(i['track']['id'])
-    return track_ids
+    return items
+
+    # track_ids = set()
+    # for i in items:
+    #     if i['track'] is not None:
+    #         track_ids.add(i['track']['id'])
+    # return track_ids

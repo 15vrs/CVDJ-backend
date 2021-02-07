@@ -1,3 +1,5 @@
+# Access "creators" table in "cvdj.db", to store Spotify access tokens.
+
 import sqlite3
 from sqlite3 import Error
 

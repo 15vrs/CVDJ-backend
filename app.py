@@ -35,19 +35,6 @@ def spotify_callback():
     
     return f'{cvdj_user_id}'
 
-# Creating a new CVDJ room with a user that is signed into Spotify.
-@app.route('/create_room/<user_id>', methods=['GET'])
-def create_room(user_id):
-    room = new_room(user_id)
-    if room == 0:
-        return "Error creating room."
-
-    rsp = {
-        'roomId': f'{room[0]}',
-        'playlistUri': f'{room[1]}'
-    }
-    return jsonify(rsp)
-
 # Adding a new user to an existing CVDJ room.
 @app.route('/join/<room_code>', methods=['GET'])
 def user_join(room_code):
@@ -62,6 +49,19 @@ def user_join(room_code):
         'playlistUri': f'{playlistUri}'
     }
     return rsp
+
+# Creating a new CVDJ room with a user that is signed into Spotify.
+@app.route('/create_room/<user_id>', methods=['GET'])
+def create_room(user_id):
+    room = new_room(user_id)
+    if room == 0:
+        return "Error creating room."
+
+    rsp = {
+        'roomId': f'{room[0]}',
+        'playlistUri': f'{room[1]}'
+    }
+    return jsonify(rsp)
 
 # Call to Face API with image to get emotion data
 @app.route("/emotion", methods=['POST'])
