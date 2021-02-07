@@ -64,10 +64,10 @@ def create_room(user_id):
     return jsonify(rsp)
 
 # Call to Face API with image to get emotion data
-@app.route("/emotion", methods=['POST'])
-def determine_emotion():
-    if (request.json):
-        return emotion_with_stream(request.json)
+@app.route("/emotion/<user_id>", methods=['POST'])
+def determine_emotion(user_id):
+    if (request.data):
+        return emotion_with_stream(user_id, request.data)
     return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
 
 # Update the room level emotion, and the playlist.

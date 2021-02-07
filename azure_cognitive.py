@@ -34,15 +34,15 @@ def extract_json(data):
     return data[1:-1]
 
 # Needs to have userId as an input
-def emotion_with_stream(data):
-    userId = data['userId']
-    image = data['face']
+def emotion_with_stream(user_id, data):
+    userId = user_id
+    image = data
     stream = BytesIO(image)
     response = face_client.face.detect_with_stream(stream, return_face_id=True, return_face_attributes=['emotion'])
     for face in response:
         save_emotion_data(userId, face.face_attributes.emotion)
     if len(response) == 1:
-        return str(response[0].face_attributes.emotion)
+        return json.load(response[0].face_attributes.emotion)
     return "More than one face"
 
 
