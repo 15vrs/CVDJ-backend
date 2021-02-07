@@ -1,3 +1,5 @@
+# Access "rooms" table in "cvdj.db", to store room level data.
+
 import sqlite3
 from sqlite3 import Error
 

@@ -4,7 +4,7 @@
 import time
 from spotify.spotify_auth import refresh_access_token
 from database.creators import get_room_spotify_tokens, get_user_spotify_tokens, update_room_spotify_tokens, update_user_spotify_tokens
-from spotify.spotify_api import get_audio_features, search
+from spotify.spotify_api import get_audio_features, get_playlist_tracks, search
 
 VALENCE_ENERGY_THRESHOLD = 0.09
 
@@ -54,21 +54,23 @@ def prune_audio_features(audio_features, target_type, target_value):
 # Params:   azure_cognitive emotion JSON for one person
 #           n number of recommendations to return
 # Returns:  list of n Spotify track objects
-def track_recommendations(emotion_json, emotion, n, curr_playlist):
+def track_recommendations(token, emotion_json, emotion, n, curr_playlist):
 
     # Reformat emotion data into spotify-queryable quantities
     # emotion = max(emotion_json, key=lambda x: emotion_json[x])
     valence, energy = format_emotion_data(emotion_json)
-
-    # Find n track recommendations
     tracks = []
-    i = 0
-    while len(tracks) < n and i <= 2000:
 
-        # Search spotify tracks for dominant emotion
-        search_res = search(emotion, i)
-        track_objects = list(search_res["tracks"]["items"])
-        ids = [i["id"] for i in track_objects]
+    # Search Spotify playlist on dominant emotion.
+    search_res = search(emotion)
+    i = 0
+
+    while len(tracks) < n and i < len(search_res):
+
+        # Get tracks from current playlist.
+        curr_id = search_res[i]
+        track_objects = get_playlist_tracks(token, curr_id)
+        ids = [i['track']['id'] for i in track_objects if i['track'] is not None]
 
         # Prune recs by current tracks, so you don't have the same song twice.
         ids = [i for i in ids if i not in curr_playlist]
@@ -85,14 +87,16 @@ def track_recommendations(emotion_json, emotion, n, curr_playlist):
 
         # Add matching track objects to tracks list
         audio_features_objects = list(audio_features['audio_features'])
-        ids = set([i["id"] for i in audio_features_objects])
-        tracks += [i for i in track_objects if i["id"] in ids]
+        ids = set([i['id'] for i in audio_features_objects])
+        tracks += [i for i in track_objects if i['track']['id'] in ids]
 
-        # Increment offset by 50, the max limit for spotify search results  
-        i += 50
+        i += 1
     
     return tracks[:n]
 
+# Params:   type of ID passed in
+#           value of ID (user ID or room ID)
+# Returns:  Spotify access tokeb
 def get_tokens(id_type, id):
 
     # Get the user from users table.

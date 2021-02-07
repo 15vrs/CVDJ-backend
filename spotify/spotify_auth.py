@@ -48,7 +48,7 @@ def refresh_access_token(refresh_token):
     global CLIENT_ID, CLIENT_SECRET, TOKEN_URL
 
     payload = {
-        'grant-type': 'refresh_token',
+        'grant_type': 'refresh_token',
         'refresh_token': refresh_token
     }
 
