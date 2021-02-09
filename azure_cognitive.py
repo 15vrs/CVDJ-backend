@@ -39,22 +39,41 @@ def emotion_with_stream(user_id, data):
     image = data
     stream = BytesIO(image)
     response = face_client.face.detect_with_stream(stream, return_face_id=True, return_face_attributes=['emotion'])
-    for face in response:
-        save_emotion_data(userId, face.face_attributes.emotion)
     if len(response) == 1:
-        return json.load(response[0].face_attributes.emotion)
-    return "More than one face"
+        data = save_emotion_data(userId, response[0].face_attributes.emotion)
+        return json.dumps(str(data))
+    else:
+        data = average_emotion_data(userId, response)
+        return json.dumps(str(data))
 
 
-def save_emotion_data(userId, data):
+def average_emotion_data(userId, faces):
+    emotions = {"anger": 0, "contempt": 0, "disgust": 0, "fear": 0, "happiness": 0, "sadness": 0, "surprise": 0}
+    for face in faces:
+        emotions["anger"] += face.face_attributes.emotion.anger
+        emotions["contempt"] += face.face_attributes.emotion.contempt
+        emotions["disgust"] += face.face_attributes.emotion.disgust
+        emotions["fear"] += face.face_attributes.emotion.fear
+        emotions["happiness"] += face.face_attributes.emotion.happiness
+        emotions["sadness"] += face.face_attributes.emotion.sadness
+        emotions["surprise"] += face.face_attributes.emotion.surprise
+    for e in emotions:
+        emotions[e] /= len(faces)
+    update_user_emotions(userId, emotions)
+    return emotions
+
+
+def save_emotion_data(userId, face):
     emotion = {
-        "anger": data.anger,
-        "contempt": data.contempt,
-        "disgust": data.disgust,
-        "fear": data.fear,
-        "happiness": data.happiness,
-        "neutral": data.neutral,
-        "sadness": data.sadness,
-        "surprise": data.surprise
+        "anger": face.anger,
+        "contempt": face.contempt,
+        "disgust": face.disgust,
+        "fear": face.fear,
+        "happiness": face.happiness,
+        "neutral": face.neutral,
+        "sadness": face.sadness,
+        "surprise": face.surprise
     }
     update_user_emotions(userId, emotion)
+    return emotion
+
