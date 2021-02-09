@@ -31,7 +31,6 @@ def insert_user_emotions(userId, data):
 # What gets called when new emotion data comes in
 def update_user_emotions(userId, data):
     try:
-        print(data)
         conn = sqlite3.connect('cvdj.db')
         cursor = conn.cursor()
         print("Connected to SQLite db.")

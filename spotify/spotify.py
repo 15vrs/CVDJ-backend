@@ -32,7 +32,7 @@ def new_room(user_id):
 
     # Create a new room and add the creator to it
     room_id = add_new_room() #DB
-    if room_id is 0:
+    if room_id == 0:
         print("Error creating room in database.")
         return 0
     add_creator_to_room(room_id, user_id)
