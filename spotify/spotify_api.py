@@ -22,7 +22,6 @@ def search(emotion):
         BEARER_TOKEN, EXPIRES_IN, START_TIME = client_credientials()
 
     # Function variables
-    # limit = 50
     type = 'playlist'
 
     # Call to spotify API
@@ -133,8 +132,16 @@ def get_playlist_tracks(token, playlist_id):
 
     return items
 
-    # track_ids = set()
-    # for i in items:
-    #     if i['track'] is not None:
-    #         track_ids.add(i['track']['id'])
-    # return track_ids
+# # Get the current user's available devices.
+# def get_devices(token):
+#     global BASE_API_URL
+
+#     url = f'{BASE_API_URL}/me/player/devices'
+#     headers = {
+#         'Accept': 'application/json',
+#         'Content-Type': 'application/json',
+#         'Authorization': f'Bearer {token}'
+#     }
+#     res = requests.get(url, headers=headers).json()
+
+#     return res

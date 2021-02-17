@@ -106,3 +106,45 @@ def get_user_emotion(room_id):
         cursor.close()
         conn.close()
         return [json.loads(row[0]) for row in rsp]
+
+def get_spotify_devices(room_id):
+    conn = sqlite3.connect('cvdj.db')
+    cursor = conn.cursor()
+    rsp = ()
+
+    try:
+        query = """ SELECT spotifyDevice FROM users
+                    WHERE roomId = ?; """
+        params = (room_id, )
+
+        cursor.execute(query, params)
+        rsp = cursor.fetchall()
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+        return [row[0] for row in rsp]
+
+def set_user_spotify_device(device_id, user_id):
+    conn = sqlite3.connect('cvdj.db')
+    cursor = conn.cursor()
+
+    try:
+        query = """ UPDATE users
+                    SET spotifyDevice = ?
+                    WHERE userId = ?; """
+        params = (device_id, user_id)
+
+        cursor.execute(query, params)
+        conn.commit()
+        print("Added device ID to user.")
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
