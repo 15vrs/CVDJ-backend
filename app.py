@@ -1,8 +1,9 @@
 from flask import Flask, request
+from flask import json
 from flask.json import jsonify
 
 # Calls to external services
-from spotify.spotify import TEST_devices, callback, new_room, join_room, set_device, update_room
+from spotify.spotify import callback, new_room, join_room, pause, play, playback, set_device, test_devices, update_room
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
@@ -84,8 +85,22 @@ def add_device():
     rsp = set_device(device_id, user_id)
     return rsp
 
-# TESTS
-@app.route('/devices/<id>', methods=['GET'])
-def devices(id):
-    rsp = TEST_devices(id)
+@app.route('playback/<room_id>', methods=['GET'])
+def room_playback(room_id):
+    rsp = playback(room_id)
+    return jsonify(rsp)
+
+@app.route('/play/<room_id>', methods=['GET'])
+def room_play(room_id):
+    rsp = play(room_id)
+    return jsonify(rsp)
+
+@app.route('/pause/<room_id>', methods=['GET'])
+def room_pause(room_id):
+    rsp = pause(room_id)
+    return jsonify(rsp)
+
+@app.route('/devices/<room_id>', methods=['GET'])
+def devices(room_id):
+    rsp = test_devices(room_id)
     return jsonify(rsp)

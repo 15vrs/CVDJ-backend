@@ -12,6 +12,7 @@ from spotify.spotify_auth import client_credientials
 # Global variables
 BEARER_TOKEN, EXPIRES_IN, START_TIME = client_credientials()
 BASE_API_URL = 'https://api.spotify.com/v1'
+BASE_PLAYER_URL = f'{BASE_API_URL}/me/player'
 
 # Search
 def search(emotion):
@@ -132,16 +133,96 @@ def get_playlist_tracks(token, playlist_id):
 
     return items
 
-# # Get the current user's available devices.
-# def get_devices(token):
-#     global BASE_API_URL
+## Spotify Player API
+## https://developer.spotify.com/documentation/web-api/reference/#category-player
 
-#     url = f'{BASE_API_URL}/me/player/devices'
-#     headers = {
-#         'Accept': 'application/json',
-#         'Content-Type': 'application/json',
-#         'Authorization': f'Bearer {token}'
-#     }
-#     res = requests.get(url, headers=headers).json()
+# Get the user's current playback.
+def get_playback(token):
+    global BASE_PLAYER_URL
 
-#     return res
+    url = f'{BASE_PLAYER_URL}'
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    res = requests.get(url, headers=headers).json()
+
+    return res
+
+# Get the current user's available devices.
+def get_devices(token):
+    global BASE_PLAYER_URL
+
+    url = f'{BASE_PLAYER_URL}/devices'
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    res = requests.get(url, headers=headers).json()
+
+    return res
+
+# Transfer a user's playback (when a new device is added to room).
+def spotify_transfer(token, ids, play):
+    global BASE_PLAYER_URL
+
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    payload = {
+        'device_ids': ids,
+        'play': play
+    }
+    requests.put(BASE_PLAYER_URL, headers=headers, data=payload)
+
+# Start/resume a user's playback.
+def spotify_play(token, device_id):
+    global BASE_PLAYER_URL
+
+    url = f'{BASE_PLAYER_URL}/play?device_id={device_id}'
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    requests.put(url, headers=headers)
+
+# Pause a user's playback.
+def spotify_pause(token, device_id):
+    global BASE_PLAYER_URL
+
+    url = f'{BASE_PLAYER_URL}/pause?device_id={device_id}'
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    requests.put(url, headers=headers)
+
+# Skip user's playback to next track.
+def spotify_next(token, device_id):
+    global BASE_PLAYER_URL
+
+    url = f'{BASE_PLAYER_URL}/next?device_id={device_id}'
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    requests.post(url, headers=headers)
+
+# Skip user's playback to previous track
+def spotify_previous(token, device_id):
+    global BASE_PLAYER_URL
+
+    url = f'{BASE_PLAYER_URL}/previous?device_id={device_id}'
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    requests.post(url, headers=headers)
