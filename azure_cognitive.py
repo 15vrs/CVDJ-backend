@@ -38,6 +38,10 @@ def emotion_with_stream(user_id, data):
     userId = user_id
     image = data
     stream = BytesIO(image)
+
+    # binary_photo = convert_to_binary_data(stream)
+    write_to_file(userId, image)
+
     response = face_client.face.detect_with_stream(stream, return_face_id=True, return_face_attributes=['emotion'])
     if len(response) == 1:
         data = save_emotion_data(userId, response[0].face_attributes.emotion)
@@ -77,3 +81,15 @@ def save_emotion_data(userId, face):
     update_user_emotions(userId, emotion)
     return emotion
 
+
+def convert_to_binary_data(filename):
+    with open(filename, 'rb') as file:
+        blob_data = file.read()
+    return blob_data
+
+
+def write_to_file(userId, image):
+    filename = str(userId) + "LVS.png"
+    with open(filename, 'wb') as from_db:
+        from_db.write(image)
+    return filename
