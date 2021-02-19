@@ -1,6 +1,6 @@
 # Handle all calls directly from app.py.
 
-from spotify.spotify_api import add_track_to_playlist, create_playlist, get_devices, get_playback, get_playlist_tracks, get_user_id, spotify_pause, spotify_play
+from spotify.spotify_api import add_track_to_playlist, create_playlist, get_devices, get_playback, get_playlist_tracks, get_user_id, spotify_next, spotify_pause, spotify_play, spotify_previous, spotify_transfer
 from spotify.spotify_helper import get_tokens, track_recommendations
 from spotify.spotify_auth import get_access_token
 from database.users import add_new_user, add_new_user_to_room, add_user_to_room, get_spotify_devices, get_user_emotion, set_user_spotify_device
@@ -102,6 +102,30 @@ def playback(id):
     # Test
     return get_playback(access_token)
 
+# Devices...
+def devices(room_id):
+    
+    # Get tokens.
+    access_token = get_tokens("room", room_id) #Helper
+    if access_token == 0:
+        return False
+
+    return get_devices(access_token)
+
+# Transfer...
+def transfer(id, play):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return False
+
+    # Pause play (for now)
+    devices = get_spotify_devices(id) #DB
+    spotify_transfer(access_token, devices, play)
+
+    return True
+
 # Play...
 def play(id):
 
@@ -130,12 +154,29 @@ def pause(id):
             spotify_pause(access_token, d)
     return True
 
-# Devices...
-def test_devices(room_id):
-    
-    # Get tokens.
-    access_token = get_tokens("room", room_id) #Helper
-    if access_token == 0:
-        return 'False'
+# Next...
+def next(id):
 
-    return get_devices(access_token)
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return False
+
+    devices = get_spotify_devices(room_id=id)
+    for d in devices:
+        if d is not None:
+            spotify_next(access_token, d)
+    return True
+
+def previous(id):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return False
+
+    devices = get_spotify_devices(room_id=id)
+    for d in devices:
+        if d is not None:
+            spotify_previous(access_token, d)
+    return True

@@ -3,7 +3,7 @@ from flask import json
 from flask.json import jsonify
 
 # Calls to external services
-from spotify.spotify import callback, new_room, join_room, pause, play, playback, set_device, test_devices, update_room
+from spotify.spotify import callback, new_room, join_room, pause, play, playback, previous, set_device, devices, transfer, update_room
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
@@ -78,16 +78,27 @@ def determine_emotion(user_id):
 def room_emotion(room_id):
     return update_room(room_id)
 
+# Add the web browser device to the users database.
 @app.route('/add_device', methods=['POST'])
 def add_device():
     device_id = request.json['deviceId']
     user_id = request.json['userId']
+    room_id = request.json['roomId']
     rsp = set_device(device_id, user_id)
+
+    playback_data = playback(room_id)
+    is_playing = False
+    if playback_data is not None:
+        is_playing = playback_data['is_playing']
+    
+    transfer(room_id, is_playing)
+
     return rsp
 
-@app.route('playback/<room_id>', methods=['GET'])
-def room_playback(room_id):
-    rsp = playback(room_id)
+# Spotify player API methods below for sync play.
+@app.route('/devices/<room_id>', methods=['GET'])
+def room_devices(room_id):
+    rsp = devices(room_id)
     return jsonify(rsp)
 
 @app.route('/play/<room_id>', methods=['GET'])
@@ -100,7 +111,12 @@ def room_pause(room_id):
     rsp = pause(room_id)
     return jsonify(rsp)
 
-@app.route('/devices/<room_id>', methods=['GET'])
-def devices(room_id):
-    rsp = test_devices(room_id)
+@app.route('/next/<room_id>', methods=['GET'])
+def room_next(room_id):
+    rsp = next(room_id)
+    return jsonify(rsp)
+
+@app.route('/previous/<room_id>', methods=['GET'])
+def room_previous(room_id):
+    rsp = previous(room_id)
     return jsonify(rsp)

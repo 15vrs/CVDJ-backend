@@ -146,9 +146,12 @@ def get_playback(token):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    res = requests.get(url, headers=headers).json()
 
-    return res
+    res = None
+    try:
+        res = requests.get(url, headers=headers).json()
+    finally:
+        return res
 
 # Get the current user's available devices.
 def get_devices(token):
