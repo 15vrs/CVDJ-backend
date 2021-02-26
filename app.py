@@ -22,15 +22,16 @@ def home_page():
     return 'CVDJ!'
 
 # Logging a user into Spotify to obtain access to their Spotify account.
-@app.route('/callback/', methods=['GET'])
+@app.route('/callback/', methods=['POST'])
 def spotify_callback():
     error = request.args.get('error')
     code = request.args.get('code')
+    redirect_uri = request.data.decode("utf-8") 
 
     if error is not None:
         return error
 
-    cvdj_user_id = callback(code)
+    cvdj_user_id = callback(code, redirect_uri)
     if cvdj_user_id == 0:
         return "Error creating and adding user to DB."
     

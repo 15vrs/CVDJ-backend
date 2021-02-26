@@ -7,7 +7,6 @@ from urllib.parse import urlencode
 # Authorization variables
 CLIENT_ID = 'ce5b366904544b58beb4a235b44ffc6c'
 CLIENT_SECRET = '9cbf5485772e4527b806a5619a7d6f39'
-REDIRECT_URI = 'http://localhost:4200/callback/'
 
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 AUTHORIZE_URL = 'https://accounts.spotify.com/authorize'
@@ -27,13 +26,13 @@ def client_credientials():
     return res_data['access_token'], res_data['expires_in'], time.time()
 
 ## Authorization code flow
-def get_access_token(code):
-    global CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, TOKEN_URL
+def get_access_token(code, redirect_uri):
+    global CLIENT_ID, CLIENT_SECRET, TOKEN_URL
     
     payload = {
         'grant_type': 'authorization_code',
         'code': code,
-        'redirect_uri': REDIRECT_URI
+        'redirect_uri': f'{redirect_uri}/callback/'
     }
 
     res = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload)

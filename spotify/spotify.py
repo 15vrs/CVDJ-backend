@@ -8,9 +8,9 @@ from database.creators import add_new_creator, add_creator_to_room
 from database.rooms import add_new_room, add_playlist_to_room, update_room_emotion, get_playlist_from_room
 
 # Logging a user in. Return user ID (not creator ID).
-def callback(code):
+def callback(code, redirect_uri):
     user_id = add_new_user()
-    access_token, refresh_token, start_time = get_access_token(code)
+    access_token, refresh_token, start_time = get_access_token(code, redirect_uri)
     add_new_creator(user_id, access_token, refresh_token, start_time)
     return user_id
 
