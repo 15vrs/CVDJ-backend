@@ -12,7 +12,7 @@ from spotify.spotify_auth import client_credientials
 # Global variables
 BEARER_TOKEN, EXPIRES_IN, START_TIME = client_credientials()
 BASE_API_URL = 'https://api.spotify.com/v1'
-BASE_PLAYER_URL = f'{BASE_API_URL}/me/player'
+BASE_PLAYER_URL = 'https://api.spotify.com/v1/me/player'
 
 # Search
 def search(emotion):
@@ -177,10 +177,11 @@ def spotify_transfer(token, ids, play):
         'Authorization': f'Bearer {token}'
     }
     payload = {
-        'device_ids': ids,
+        'device_ids': [ids],
         'play': play
     }
-    requests.put(BASE_PLAYER_URL, headers=headers, data=payload)
+    res = requests.put(BASE_PLAYER_URL, headers=headers, data=json.dumps(payload))
+    return res.status_code
 
 # Start/resume a user's playback.
 def spotify_play(token, device_id):
@@ -192,7 +193,8 @@ def spotify_play(token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    requests.put(url, headers=headers)
+    res = requests.put(url, headers=headers).status_code
+    return res
 
 # Pause a user's playback.
 def spotify_pause(token, device_id):
@@ -204,7 +206,8 @@ def spotify_pause(token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    requests.put(url, headers=headers)
+    res = requests.put(url, headers=headers)
+    return res.status_code
 
 # Skip user's playback to next track.
 def spotify_next(token, device_id):
@@ -216,7 +219,8 @@ def spotify_next(token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    requests.post(url, headers=headers)
+    res = requests.post(url, headers=headers)
+    return res.status_code
 
 # Skip user's playback to previous track
 def spotify_previous(token, device_id):
@@ -228,4 +232,5 @@ def spotify_previous(token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    requests.post(url, headers=headers)
+    res = requests.post(url, headers=headers)
+    return res.status_code

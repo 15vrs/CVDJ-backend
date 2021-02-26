@@ -97,9 +97,9 @@ def playback(id):
     # Get tokens.
     access_token = get_tokens("room", id) #Helper
     if access_token == 0:
-        return False
+        return None
 
-    # Test
+    # If there is no playback data, start playing from the first track in the playlist.
     return get_playback(access_token)
 
 # Devices...
@@ -120,9 +120,10 @@ def transfer(id, play):
     if access_token == 0:
         return False
 
-    # Pause play (for now)
     devices = get_spotify_devices(id) #DB
-    spotify_transfer(access_token, devices, play)
+    for d in set(devices):
+        if d is not None:
+            spotify_transfer(access_token, d, play)
 
     return True
 
@@ -135,7 +136,7 @@ def play(id):
         return False
 
     devices = get_spotify_devices(room_id=id)
-    for d in devices:
+    for d in set(devices):
         if d is not None:
             spotify_play(access_token, d)
     return True
@@ -149,7 +150,7 @@ def pause(id):
         return False
 
     devices = get_spotify_devices(room_id=id)
-    for d in devices:
+    for d in set(devices):
         if d is not None:
             spotify_pause(access_token, d)
     return True
@@ -163,7 +164,7 @@ def next(id):
         return False
 
     devices = get_spotify_devices(room_id=id)
-    for d in devices:
+    for d in set(devices):
         if d is not None:
             spotify_next(access_token, d)
     return True
@@ -176,7 +177,7 @@ def previous(id):
         return False
 
     devices = get_spotify_devices(room_id=id)
-    for d in devices:
+    for d in set(devices):
         if d is not None:
             spotify_previous(access_token, d)
     return True

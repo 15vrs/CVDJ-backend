@@ -96,6 +96,11 @@ def add_device():
     return rsp
 
 # Spotify player API methods below for sync play.
+@app.route('/playback/<room_id>', methods=['GET'])
+def room_playback(room_id):
+    rsp = playback(room_id)
+    return jsonify(rsp)
+
 @app.route('/devices/<room_id>', methods=['GET'])
 def room_devices(room_id):
     rsp = devices(room_id)
