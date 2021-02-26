@@ -116,7 +116,8 @@ def add_track_to_playlist(token, track_uri, playlist_id):
     payload = {
         'uris': [track_uri]
     }
-    requests.post(url, headers=headers, data=json.dumps(payload)).json()
+    res = requests.post(url, headers=headers, data=json.dumps(payload)).json()
+    return res
 
 # Get the track ids that are on the given playlist.
 def get_playlist_tracks(token, playlist_id):
@@ -153,20 +154,6 @@ def get_playback(token):
     finally:
         return res
 
-# Get the current user's available devices.
-def get_devices(token):
-    global BASE_PLAYER_URL
-
-    url = f'{BASE_PLAYER_URL}/devices'
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {token}'
-    }
-    res = requests.get(url, headers=headers).json()
-
-    return res
-
 # Transfer a user's playback (when a new device is added to room).
 def spotify_transfer(token, ids, play):
     global BASE_PLAYER_URL
@@ -184,7 +171,7 @@ def spotify_transfer(token, ids, play):
     return res.status_code
 
 # Start/resume a user's playback.
-def spotify_play(token, device_id):
+def spotify_play(token, device_id, uri, position):
     global BASE_PLAYER_URL
 
     url = f'{BASE_PLAYER_URL}/play?device_id={device_id}'
@@ -193,7 +180,11 @@ def spotify_play(token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    res = requests.put(url, headers=headers).status_code
+    payload = {
+        'context_uri': uri,
+        'position_ms': position
+    }
+    res = requests.put(url, headers=headers, data=json.dumps(payload)).status_code
     return res
 
 # Pause a user's playback.

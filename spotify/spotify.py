@@ -1,6 +1,6 @@
 # Handle all calls directly from app.py.
 
-from spotify.spotify_api import add_track_to_playlist, create_playlist, get_devices, get_playback, get_playlist_tracks, get_user_id, spotify_next, spotify_pause, spotify_play, spotify_previous, spotify_transfer
+from spotify.spotify_api import add_track_to_playlist, create_playlist, get_playback, get_playlist_tracks, get_user_id, spotify_next, spotify_pause, spotify_play, spotify_previous, spotify_transfer
 from spotify.spotify_helper import get_tokens, track_recommendations
 from spotify.spotify_auth import get_access_token
 from database.users import add_new_user, add_new_user_to_room, add_user_to_room, get_spotify_devices, get_user_emotion, set_user_spotify_device
@@ -47,6 +47,11 @@ def new_room(user_id):
     # Get spotify user id and create playlist for room.
     spotify_user_id = get_user_id(access_token) #API
     playlist_id = create_playlist(access_token, spotify_user_id, room_id) #API
+
+    #TODO: TEMP CODE TO ADD Needed Me - Rihanna TO PLAYLIST
+    add_track_to_playlist(access_token, 'spotify:track:1Tt4sE4pXi57mTD1GCzsqm', playlist_id)
+    #
+
     add_playlist_to_room(playlist_id, room_id) #DB
 
     return room_id, playlist_id, access_token
@@ -102,15 +107,18 @@ def playback(id):
     # If there is no playback data, start playing from the first track in the playlist.
     return get_playback(access_token)
 
-# Devices...
-def devices(room_id):
-    
-    # Get tokens.
-    access_token = get_tokens("room", room_id) #Helper
-    if access_token == 0:
-        return False
-
-    return get_devices(access_token)
+# Get album art images from playback. Input room_id.
+def album_art(id):
+    ret = None
+    try:
+        data = playback(id)
+        ret = data['item']['album']['images'][0]['url']
+        # if 'item' in data:
+        #     if 'album' in data['item']:
+        #         if 'images' in data['item']['album']:
+        #             ret = data['item']['album']['images'][0]['url']
+    finally:
+        return ret
 
 # Transfer...
 def transfer(id, play):
@@ -133,13 +141,29 @@ def play(id):
     # Get tokens.
     access_token = get_tokens("room", id) #Helper
     if access_token == 0:
-        return False
+        return None
 
+    # Get playlist URI
+    playlist_id = get_playlist_from_room(id)[0]
+    uri = f'spotify:playlist:{playlist_id}'
+    position = 0
+
+    # Get playback
+    data = playback(id)
+    if 'context' in data:
+        curr_uri = data['context']['uri']
+        if curr_uri == uri:
+            position = data['progress_ms']
+
+    # Call play from Spotify
     devices = get_spotify_devices(room_id=id)
     for d in set(devices):
         if d is not None:
-            spotify_play(access_token, d)
-    return True
+            spotify_play(access_token, d, uri, position)
+
+    # Get album art
+    art = album_art(id)
+    return art
 
 # Pause...
 def pause(id):
@@ -147,13 +171,16 @@ def pause(id):
     # Get tokens.
     access_token = get_tokens("room", id) #Helper
     if access_token == 0:
-        return False
+        return None
 
     devices = get_spotify_devices(room_id=id)
     for d in set(devices):
         if d is not None:
             spotify_pause(access_token, d)
-    return True
+
+    # Get album art
+    art = album_art(id)
+    return art
 
 # Next...
 def next(id):
@@ -161,23 +188,30 @@ def next(id):
     # Get tokens.
     access_token = get_tokens("room", id) #Helper
     if access_token == 0:
-        return False
+        return None
 
     devices = get_spotify_devices(room_id=id)
     for d in set(devices):
         if d is not None:
             spotify_next(access_token, d)
-    return True
 
+    # Get album art
+    art = album_art(id)
+    return art
+
+# Previous
 def previous(id):
 
     # Get tokens.
     access_token = get_tokens("room", id) #Helper
     if access_token == 0:
-        return False
+        return None
 
     devices = get_spotify_devices(room_id=id)
     for d in set(devices):
         if d is not None:
             spotify_previous(access_token, d)
-    return True
+
+    # Get album art
+    art = album_art(id)
+    return art

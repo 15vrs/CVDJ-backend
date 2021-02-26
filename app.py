@@ -3,7 +3,7 @@ from flask import json
 from flask.json import jsonify
 
 # Calls to external services
-from spotify.spotify import callback, new_room, join_room, pause, play, playback, previous, set_device, devices, transfer, update_room
+from spotify.spotify import callback, new_room, join_room, pause, play, playback, previous, set_device, transfer, update_room
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
@@ -96,16 +96,6 @@ def add_device():
     return rsp
 
 # Spotify player API methods below for sync play.
-@app.route('/playback/<room_id>', methods=['GET'])
-def room_playback(room_id):
-    rsp = playback(room_id)
-    return jsonify(rsp)
-
-@app.route('/devices/<room_id>', methods=['GET'])
-def room_devices(room_id):
-    rsp = devices(room_id)
-    return jsonify(rsp)
-
 @app.route('/play/<room_id>', methods=['GET'])
 def room_play(room_id):
     rsp = play(room_id)
