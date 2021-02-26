@@ -79,7 +79,7 @@ def track_recommendations(token, emotion_json, emotion, n, curr_playlist):
         if ids == list():
             print("No tracks match input valence and energy.")
             break
-        audio_features = get_audio_features(ids)
+        audio_features = get_audio_features(ids) #API
 
         # Prune audio features by target valence and energy
         prune_audio_features(audio_features=audio_features, target_type='valence', target_value=valence)

@@ -1,9 +1,9 @@
 # Handle all calls directly from app.py.
 
-from spotify.spotify_api import add_track_to_playlist, create_playlist, get_playlist_tracks, get_user_id
+from spotify.spotify_api import add_track_to_playlist, create_playlist, get_devices, get_playback, get_playlist_tracks, get_user_id, spotify_next, spotify_pause, spotify_play, spotify_previous, spotify_transfer
 from spotify.spotify_helper import get_tokens, track_recommendations
 from spotify.spotify_auth import get_access_token
-from database.users import add_new_user, add_new_user_to_room, add_user_to_room, get_user_emotion
+from database.users import add_new_user, add_new_user_to_room, add_user_to_room, get_spotify_devices, get_user_emotion, set_user_spotify_device
 from database.creators import add_new_creator, add_creator_to_room
 from database.rooms import add_new_room, add_playlist_to_room, update_room_emotion, get_playlist_from_room
 
@@ -16,9 +16,15 @@ def callback(code):
 
 # Joining a room. Return room's playlist and user ID.
 def join_room(room_id):
-    playlist_id = get_playlist_from_room(room_id)
+    playlist_id = get_playlist_from_room(room_id) #DB
     user_id = add_new_user_to_room(room_id)
-    return user_id, playlist_id[0]
+
+    # Get tokens
+    access_token = get_tokens("room", room_id) #Helper
+    if access_token == 0:
+        return 0
+
+    return user_id, playlist_id[0], access_token
 
 # Creating a new room.
 # Input:  Int - user ID of creator of new room.
@@ -43,7 +49,7 @@ def new_room(user_id):
     playlist_id = create_playlist(access_token, spotify_user_id, room_id) #API
     add_playlist_to_room(playlist_id, room_id) #DB
 
-    return room_id, playlist_id
+    return room_id, playlist_id, access_token
 
 # Average the room level emotion.
 # Input:  Int - room code/ID.
@@ -72,10 +78,6 @@ def update_room(room_id):
     playlist_id = get_playlist_from_room(room_id)[0] #DB
     curr_items = get_playlist_tracks(access_token, playlist_id) #API
     curr_tracks = set([i['track']['id'] for i in curr_items if i['track'] is not None])
-    # for i in curr_items:
-    #     if i['track'] is not None:
-    #         track_ids.add(i['track']['id'])
-    # return track_ids
 
     tracks = track_recommendations(access_token, emotions, max_emotion, 1, curr_tracks) #Helper
     new_track = tracks[0]['track']['uri']
@@ -83,3 +85,99 @@ def update_room(room_id):
 
     # Return the dominant emotion.
     return max_emotion
+
+# Add the device ID to the database.
+def set_device(device_id, user_id):
+    set_user_spotify_device(device_id, user_id)
+    return ''
+
+# Playback...
+def playback(id):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return None
+
+    # If there is no playback data, start playing from the first track in the playlist.
+    return get_playback(access_token)
+
+# Devices...
+def devices(room_id):
+    
+    # Get tokens.
+    access_token = get_tokens("room", room_id) #Helper
+    if access_token == 0:
+        return False
+
+    return get_devices(access_token)
+
+# Transfer...
+def transfer(id, play):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return False
+
+    devices = get_spotify_devices(id) #DB
+    for d in set(devices):
+        if d is not None:
+            spotify_transfer(access_token, d, play)
+
+    return True
+
+# Play...
+def play(id):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return False
+
+    devices = get_spotify_devices(room_id=id)
+    for d in set(devices):
+        if d is not None:
+            spotify_play(access_token, d)
+    return True
+
+# Pause...
+def pause(id):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return False
+
+    devices = get_spotify_devices(room_id=id)
+    for d in set(devices):
+        if d is not None:
+            spotify_pause(access_token, d)
+    return True
+
+# Next...
+def next(id):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return False
+
+    devices = get_spotify_devices(room_id=id)
+    for d in set(devices):
+        if d is not None:
+            spotify_next(access_token, d)
+    return True
+
+def previous(id):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return False
+
+    devices = get_spotify_devices(room_id=id)
+    for d in set(devices):
+        if d is not None:
+            spotify_previous(access_token, d)
+    return True

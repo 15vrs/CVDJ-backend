@@ -1,3 +1,7 @@
+-- DROP TABLE rooms;
+-- DROP TABLE creators;
+-- DROP TABLE users;
+
 CREATE TABLE IF NOT EXISTS rooms(
     roomId INTEGER PRIMARY KEY,
     spotifyPlaylistId TEXT,
@@ -20,5 +24,6 @@ CREATE TABLE IF NOT EXISTS users(
     roomId INTEGER,
     lastVideoStill BLOB,
     emotionData TEXT,
+    spotifyDevice TEXT,
     FOREIGN KEY (roomId) REFERENCES rooms (roomId)
 );
