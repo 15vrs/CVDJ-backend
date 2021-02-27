@@ -2,7 +2,6 @@
 
 import requests
 import time
-from urllib.parse import urlencode
 
 # Authorization variables
 CLIENT_ID = 'ce5b366904544b58beb4a235b44ffc6c'

@@ -1,7 +1,7 @@
 # Handle all calls directly from app.py.
 
-from spotify.spotify_api import add_track_to_playlist, create_playlist, get_playback, get_playlist_tracks, get_user_id, spotify_next, spotify_pause, spotify_play, spotify_previous, spotify_transfer
-from spotify.spotify_helper import get_tokens, track_recommendations
+from spotify.spotify_api import add_track_to_playlist, create_playlist, get_playlist_tracks, get_user_id, spotify_next, spotify_pause, spotify_play, spotify_previous
+from spotify.spotify_helper import get_tokens, playback, player_data, track_recommendations
 from spotify.spotify_auth import get_access_token
 from database.users import add_new_user, add_new_user_to_room, add_user_to_room, get_spotify_devices, get_user_emotion, set_user_spotify_device
 from database.creators import add_new_creator, add_creator_to_room
@@ -49,7 +49,7 @@ def new_room(user_id):
     playlist_id = create_playlist(access_token, spotify_user_id, room_id) #API
 
     #TODO: TEMP CODE TO ADD Needed Me - Rihanna TO PLAYLIST
-    add_track_to_playlist(access_token, 'spotify:track:1Tt4sE4pXi57mTD1GCzsqm', playlist_id)
+    add_track_to_playlist(access_token, 'spotify:track:0LtOwyZoSNZKJWHqjzADpW', playlist_id)
     #
 
     add_playlist_to_room(playlist_id, room_id) #DB
@@ -96,45 +96,7 @@ def set_device(device_id, user_id):
     set_user_spotify_device(device_id, user_id)
     return ''
 
-# Playback...
-def playback(id):
-
-    # Get tokens.
-    access_token = get_tokens("room", id) #Helper
-    if access_token == 0:
-        return None
-
-    # If there is no playback data, start playing from the first track in the playlist.
-    return get_playback(access_token)
-
-# Get album art images from playback. Input room_id.
-def album_art(id):
-    ret = None
-    try:
-        data = playback(id)
-        ret = data['item']['album']['images'][0]['url']
-        # if 'item' in data:
-        #     if 'album' in data['item']:
-        #         if 'images' in data['item']['album']:
-        #             ret = data['item']['album']['images'][0]['url']
-    finally:
-        return ret
-
-# Transfer...
-def transfer(id, play):
-
-    # Get tokens.
-    access_token = get_tokens("room", id) #Helper
-    if access_token == 0:
-        return False
-
-    devices = get_spotify_devices(id) #DB
-    for d in set(devices):
-        if d is not None:
-            spotify_transfer(access_token, d, play)
-
-    return True
-
+## Handle synchronous play calls from FE.
 # Play...
 def play(id):
 
@@ -150,7 +112,7 @@ def play(id):
 
     # Get playback
     data = playback(id)
-    if 'context' in data:
+    if data is not None and 'context' in data:
         curr_uri = data['context']['uri']
         if curr_uri == uri:
             position = data['progress_ms']
@@ -162,7 +124,7 @@ def play(id):
             spotify_play(access_token, d, uri, position)
 
     # Get album art
-    art = album_art(id)
+    art = player_data(id)
     return art
 
 # Pause...
@@ -179,11 +141,11 @@ def pause(id):
             spotify_pause(access_token, d)
 
     # Get album art
-    art = album_art(id)
+    art = player_data(id)
     return art
 
 # Next...
-def next(id):
+def skip(id):
 
     # Get tokens.
     access_token = get_tokens("room", id) #Helper
@@ -196,7 +158,7 @@ def next(id):
             spotify_next(access_token, d)
 
     # Get album art
-    art = album_art(id)
+    art = player_data(id)
     return art
 
 # Previous
@@ -213,5 +175,5 @@ def previous(id):
             spotify_previous(access_token, d)
 
     # Get album art
-    art = album_art(id)
+    art = player_data(id)
     return art

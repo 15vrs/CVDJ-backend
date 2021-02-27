@@ -1,10 +1,11 @@
 # Miscellaneous helper functions for Spotify related code.
 
 # Global variables
+from database.users import get_spotify_devices
 import time
 from spotify.spotify_auth import refresh_access_token
 from database.creators import get_room_spotify_tokens, get_user_spotify_tokens, update_room_spotify_tokens, update_user_spotify_tokens
-from spotify.spotify_api import get_audio_features, get_playlist_tracks, search
+from spotify.spotify_api import get_audio_features, get_playback, get_playlist_tracks, search, spotify_transfer
 
 VALENCE_ENERGY_THRESHOLD = 0.09
 
@@ -127,3 +128,44 @@ def get_tokens(id_type, id):
     
     return access_token
     
+# Transfer...
+def transfer(id, play):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return False
+
+    devices = get_spotify_devices(id) #DB
+    for d in set(devices):
+        if d is not None:
+            spotify_transfer(access_token, d, play)
+
+    return True
+
+# Playback...
+def playback(id):
+
+    # Get tokens.
+    access_token = get_tokens("room", id) #Helper
+    if access_token == 0:
+        return None
+
+    # If there is no playback data, start playing from the first track in the playlist.
+    return get_playback(access_token)
+
+# Get required data for player from playback. Input room_id.
+def player_data(id):
+    ret = None
+    try:
+        data = playback(id)
+        album_art = data['item']['album']['images'][0]['url']
+        artist = data['item']['artists'][0]['name']
+        song = data['item']['name']
+        ret = {
+            'song': song,
+            'artist': artist,
+            'albumArt': album_art
+        }
+    finally:
+        return ret

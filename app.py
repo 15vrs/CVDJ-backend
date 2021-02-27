@@ -3,7 +3,8 @@ from flask import json
 from flask.json import jsonify
 
 # Calls to external services
-from spotify.spotify import callback, new_room, join_room, pause, play, playback, previous, set_device, transfer, update_room
+from spotify.spotify import callback, new_room, join_room, pause, play, skip, previous, set_device, update_room
+from spotify.spotify_helper import playback, transfer
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
@@ -109,7 +110,7 @@ def room_pause(room_id):
 
 @app.route('/next/<room_id>', methods=['GET'])
 def room_next(room_id):
-    rsp = next(room_id)
+    rsp = skip(room_id)
     return jsonify(rsp)
 
 @app.route('/previous/<room_id>', methods=['GET'])
