@@ -51,7 +51,7 @@ def get_audio_features(track_ids):
         BEARER_TOKEN, EXPIRES_IN, START_TIME = client_credientials()
 
     # Function variables
-    x = ','.join(track_ids)
+    x = ','.join([i for i in track_ids if i is not None])
 
     # Call to spotify API
     url = f'{BASE_API_URL}/audio-features/?ids={x}'
