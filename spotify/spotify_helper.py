@@ -77,9 +77,6 @@ def track_recommendations(token, emotion_json, emotion, n, curr_playlist):
         ids = [i for i in ids if i not in curr_playlist]
 
         # Get audio features for tracks
-        if ids == list():
-            print("No tracks match input valence and energy.")
-            break
         audio_features = get_audio_features(ids) #API
 
         # Prune audio features by target valence and energy
@@ -89,6 +86,8 @@ def track_recommendations(token, emotion_json, emotion, n, curr_playlist):
         # Add matching track objects to tracks list
         audio_features_objects = list(audio_features['audio_features'])
         ids = set([i['id'] for i in audio_features_objects])
+        if ids == set():
+            return None
         tracks += [i for i in track_objects if i['track']['id'] in ids]
 
         i += 1

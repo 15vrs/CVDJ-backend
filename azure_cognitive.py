@@ -59,12 +59,12 @@ def average_emotion_data(userId, faces):
         emotions["surprise"] += face.face_attributes.emotion.surprise
     for e in emotions:
         emotions[e] /= len(faces)
-    update_user_emotions(userId, emotions)
+    update_user_emotions(userId, json.dumps(emotions))
     return emotions
 
 
 def save_emotion_data(userId, face):
-    emotion = {
+    emotion = json.dumps({
         "anger": face.anger,
         "contempt": face.contempt,
         "disgust": face.disgust,
@@ -73,7 +73,7 @@ def save_emotion_data(userId, face):
         "neutral": face.neutral,
         "sadness": face.sadness,
         "surprise": face.surprise
-    }
+    })
     update_user_emotions(userId, emotion)
     return emotion
 

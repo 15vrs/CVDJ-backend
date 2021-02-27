@@ -197,8 +197,8 @@ def spotify_pause(token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    res = requests.put(url, headers=headers)
-    return res.status_code
+    res = requests.put(url, headers=headers).status_code
+    return res
 
 # Skip user's playback to next track.
 def spotify_next(token, device_id):
@@ -210,8 +210,8 @@ def spotify_next(token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    res = requests.post(url, headers=headers)
-    return res.status_code
+    res = requests.post(url, headers=headers).status_code
+    return res
 
 # Skip user's playback to previous track
 def spotify_previous(token, device_id):
@@ -223,5 +223,5 @@ def spotify_previous(token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    res = requests.post(url, headers=headers)
-    return res.status_code
+    res = requests.post(url, headers=headers).status_code
+    return res

@@ -85,6 +85,8 @@ def update_room(room_id):
     curr_tracks = set([i['track']['id'] for i in curr_items if i['track'] is not None])
 
     tracks = track_recommendations(access_token, emotions, max_emotion, 1, curr_tracks) #Helper
+    if tracks is None:
+        return "No tracks match input valence and energy."
     new_track = tracks[0]['track']['uri']
     add_track_to_playlist(access_token, new_track, playlist_id) #API
 
@@ -115,7 +117,8 @@ def play(id):
     if data is not None and 'context' in data:
         curr_uri = data['context']['uri']
         if curr_uri == uri:
-            position = data['progress_ms']
+            uri = None
+            position = None
 
     # Call play from Spotify
     devices = get_spotify_devices(room_id=id)
