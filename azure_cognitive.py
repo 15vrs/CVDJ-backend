@@ -42,9 +42,20 @@ def emotion_with_stream(user_id, data):
     if len(response) == 1:
         data = save_emotion_data(userId, response[0].face_attributes.emotion)
         return json.dumps(str(data))
-    else:
+    elif len(response) > 1:
         data = average_emotion_data(userId, response)
         return json.dumps(str(data))
+    else:
+        return emotion = json.dumps(str({
+        "anger": 0,
+        "contempt": 0,
+        "disgust": 0,
+        "fear": 0,
+        "happiness": 0,
+        "neutral": 0,
+        "sadness": 0,
+        "surprise": 0
+    }))
 
 
 def average_emotion_data(userId, faces):
