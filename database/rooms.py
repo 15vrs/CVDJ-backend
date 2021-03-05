@@ -69,11 +69,10 @@ def update_room_emotion(emotion, room_id):
         conn.close()
 
 def get_playlist_from_room(room_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
-    rsp = ()
-
     try:
+        conn = sqlite3.connect('cvdj.db')
+        cursor = conn.cursor()
+        rsp = ()
         query = """ SELECT spotifyPlaylistId FROM rooms
                     WHERE roomId = ?; """
         params = (room_id, )
