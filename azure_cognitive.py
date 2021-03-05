@@ -46,7 +46,7 @@ def emotion_with_stream(user_id, data):
         data = average_emotion_data(userId, response)
         return json.dumps(str(data))
     else:
-        return emotion = json.dumps(str({
+        return json.dumps(str({
         "anger": 0,
         "contempt": 0,
         "disgust": 0,
