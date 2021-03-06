@@ -1,129 +1,130 @@
-# Access "creators" table in "cvdj.db", to store Spotify access tokens.
 
-import sqlite3
-from sqlite3 import Error
+# # Access "creators" table in "cvdj.db", to store Spotify access tokens.
 
-def add_new_creator(user_id, access_token, refresh_token, start_time):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
+# import sqlite3
+# from sqlite3 import Error
 
-    try:
-        query = """ INSERT INTO creators (userId, spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime)
-                    VALUES (?, ?, ?, ?); """
-        params = (user_id, access_token, refresh_token, start_time)
+# def add_new_creator(user_id, access_token, refresh_token, start_time):
+#     conn = sqlite3.connect('cvdj.db')
+#     cursor = conn.cursor()
 
-        cursor.execute(query, params)
-        conn.commit()
-        print("New creator added to table")
+#     try:
+#         query = """ INSERT INTO creators (userId, spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime)
+#                     VALUES (?, ?, ?, ?); """
+#         params = (user_id, access_token, refresh_token, start_time)
 
-    except Error as e:
-        print(e)
+#         cursor.execute(query, params)
+#         conn.commit()
+#         print("New creator added to table")
 
-    finally:
-        cursor.close()
-        conn.close()
+#     except Error as e:
+#         print(e)
 
-def add_creator_to_room(room_id, user_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
+#     finally:
+#         cursor.close()
+#         conn.close()
 
-    try:
-        query = """ UPDATE creators
-                    SET roomId = ?
-                    WHERE userId = ?; """
-        params = (room_id, user_id)
+# def add_creator_to_room(room_id, user_id):
+#     conn = sqlite3.connect('cvdj.db')
+#     cursor = conn.cursor()
 
-        cursor.execute(query, params)
-        conn.commit()
-        print("Added user to room.")
+#     try:
+#         query = """ UPDATE creators
+#                     SET roomId = ?
+#                     WHERE userId = ?; """
+#         params = (room_id, user_id)
 
-    except Error as e:
-        print(e)
+#         cursor.execute(query, params)
+#         conn.commit()
+#         print("Added user to room.")
 
-    finally:
-        cursor.close()
-        conn.close()
+#     except Error as e:
+#         print(e)
 
-def get_user_spotify_tokens(user_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
-    rsp = ()
+#     finally:
+#         cursor.close()
+#         conn.close()
 
-    try:
-        query = """ SELECT spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime FROM creators
-                    WHERE userId = ?; """
-        params = (user_id, )
+# def get_user_spotify_tokens(user_id):
+#     conn = sqlite3.connect('cvdj.db')
+#     cursor = conn.cursor()
+#     rsp = ()
 
-        cursor.execute(query, params)
-        rsp = cursor.fetchone()
+#     try:
+#         query = """ SELECT spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime FROM creators
+#                     WHERE userId = ?; """
+#         params = (user_id, )
 
-    except Error as e:
-        print(e)
+#         cursor.execute(query, params)
+#         rsp = cursor.fetchone()
 
-    finally:
-        cursor.close()
-        conn.close()
-        return rsp
+#     except Error as e:
+#         print(e)
 
-def update_user_spotify_tokens(access_token, start_time, user_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
+#     finally:
+#         cursor.close()
+#         conn.close()
+#         return rsp
 
-    try:
-        query = """ UPDATE creators
-                    SET spotifyAccessToken = ?, spotifyAccessTime = ?
-                    WHERE userId = ?; """
-        params = (access_token, start_time, user_id)
+# def update_user_spotify_tokens(access_token, start_time, user_id):
+#     conn = sqlite3.connect('cvdj.db')
+#     cursor = conn.cursor()
 
-        cursor.execute(query, params)
-        conn.commit()
-        print("Refreshed spotify access tokens.")
+#     try:
+#         query = """ UPDATE creators
+#                     SET spotifyAccessToken = ?, spotifyAccessTime = ?
+#                     WHERE userId = ?; """
+#         params = (access_token, start_time, user_id)
 
-    except Error as e:
-        print(e)
+#         cursor.execute(query, params)
+#         conn.commit()
+#         print("Refreshed spotify access tokens.")
 
-    finally:
-        cursor.close()
-        conn.close()
+#     except Error as e:
+#         print(e)
 
-def get_room_spotify_tokens(room_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
-    rsp = ()
+#     finally:
+#         cursor.close()
+#         conn.close()
 
-    try:
-        query = """ SELECT spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime FROM creators
-                    WHERE roomId = ?; """
-        params = (room_id, )
+# def get_room_spotify_tokens(room_id):
+#     conn = sqlite3.connect('cvdj.db')
+#     cursor = conn.cursor()
+#     rsp = ()
 
-        cursor.execute(query, params)
-        rsp = cursor.fetchone()
+#     try:
+#         query = """ SELECT spotifyAccessToken, spotifyRefreshToken, spotifyAccessTime FROM creators
+#                     WHERE roomId = ?; """
+#         params = (room_id, )
 
-    except Error as e:
-        print(e)
+#         cursor.execute(query, params)
+#         rsp = cursor.fetchone()
 
-    finally:
-        cursor.close()
-        conn.close()
-        return rsp
+#     except Error as e:
+#         print(e)
 
-def update_room_spotify_tokens(access_token, start_time, room_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
+#     finally:
+#         cursor.close()
+#         conn.close()
+#         return rsp
 
-    try:
-        query = """ UPDATE creators
-                    SET spotifyAccessToken = ?, spotifyAccessTime = ?
-                    WHERE roomId = ?; """
-        params = (access_token, start_time, room_id)
+# def update_room_spotify_tokens(access_token, start_time, room_id):
+#     conn = sqlite3.connect('cvdj.db')
+#     cursor = conn.cursor()
 
-        cursor.execute(query, params)
-        conn.commit()
-        print("Refreshed spotify access tokens.")
+#     try:
+#         query = """ UPDATE creators
+#                     SET spotifyAccessToken = ?, spotifyAccessTime = ?
+#                     WHERE roomId = ?; """
+#         params = (access_token, start_time, room_id)
 
-    except Error as e:
-        print(e)
+#         cursor.execute(query, params)
+#         conn.commit()
+#         print("Refreshed spotify access tokens.")
 
-    finally:
-        cursor.close()
-        conn.close()
+#     except Error as e:
+#         print(e)
+
+#     finally:
+#         cursor.close()
+#         conn.close()
