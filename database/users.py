@@ -4,7 +4,7 @@ import json
 import sqlite3
 from sqlite3 import Error
 
-DEFAULT_EMOTION_JSON = json.dumps({
+DEFAULT_EMOTION_JSON = {
         "anger": 0.0,
         "contempt": 0.0,
         "disgust": 0.0,
@@ -13,138 +13,83 @@ DEFAULT_EMOTION_JSON = json.dumps({
         "neutral": 1.0,
         "sadness": 0.0,
         "surprise": 0.0
-    })
+    }
 
-def add_new_user(): # Only called by add_new_creator().
-    global DEFAULT_EMOTION_JSON
+class User:
+
+    def __init__(self, room_id, device_id):
+        self.id = 0
+        self.emotion_data = DEFAULT_EMOTION_JSON
+        self.device_id = device_id
+
+        # Create room object in database.users.
+        try:
+            conn = sqlite3.connect('cvdj.db')
+            cursor = conn.cursor()
+            query = """ INSERT INTO users (roomId, emotionData, spotifyDevice)
+                        VALUES (?, ?, ?); """
+            params = (room_id, json.dumps(DEFAULT_EMOTION_JSON), device_id)
+
+            cursor.execute(query, params)
+            self.id = cursor.lastrowid
+            conn.commit()
+
+        except Error as e:
+            print(e)
+
+        finally:
+            cursor.close()
+            conn.close()    
+
+        return self.id
+
+    # Delete user from database.
+    def __del__(self):
+        try:
+            conn = sqlite3.connect('cvdj.db')
+            cursor = conn.cursor()
+            query = """ DELETE FROM users
+                        WHERE userId = ?; """
+            params = (self.id, )
+
+            cursor.execute(query, params)
+            conn.commit()
+
+        except Error as e:
+            print(e)
+
+        finally:
+            cursor.close()
+            conn.close()
     
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
-    user_id = 0
+    ## Setters
+    # Set emotion data in database.
+    def set_emotion_data(self, emotion_data):
+        self.emotion_data = emotion_data
 
-    try:
-        query = """ INSERT INTO users (emotionData)
-                    VALUES (?); """
-        params = (DEFAULT_EMOTION_JSON, )
+        try:
+            conn = sqlite3.connect('cvdj.db')
+            cursor = conn.cursor()
+            query = """ UPDATE users
+                        SET emotionData = ?
+                        WHERE userId = ?; """
+            params = (json.dumps(emotion_data), self.id)
 
-        cursor.execute(query, params)
-        user_id = cursor.lastrowid
-        conn.commit()
-        print("New user added to table")
+            cursor.execute(query, params)
+            conn.commit()
 
-    except Error as e:
-        print(e)
+        except Error as e:
+            print(e)
 
-    finally:
-        cursor.close()
-        conn.close()
-        return user_id
+        finally:
+            cursor.close()
+            conn.close()
 
-def add_user_to_room(room_id, user_id): # Only called by add_new_creator().
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
+    ## Getters
+    # Get emotion data.
+    def get_emotion_data(self):
+        return self.emotion_data
 
-    try:
-        query = """ UPDATE users
-                    SET roomId = ?
-                    WHERE userId = ?; """
-        params = (room_id, user_id)
-
-        cursor.execute(query, params)
-        conn.commit()
-        print("Added user to room.")
-
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
-
-def add_new_user_to_room(room_id): # Join room.
-    global DEFAULT_EMOTION_JSON
-    
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
-    user_id = 0
-
-    try:
-        query = """ INSERT INTO users (roomId, emotionData)
-                    VALUES (?, ?); """
-        params = (room_id, DEFAULT_EMOTION_JSON, )
-
-        cursor.execute(query, params)
-        user_id = cursor.lastrowid
-        conn.commit()
-        print("New user added to table")
-
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
-        return user_id
-
-def get_user_emotion(room_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
-    rsp = ()
-
-    try:
-        query = """ SELECT emotionData FROM users
-                    WHERE roomId = ?; """
-        params = (room_id, )
-
-        cursor.execute(query, params)
-        rsp = cursor.fetchall()
-
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
-        return [json.loads(row[0]) for row in rsp]
-
-def get_spotify_devices(room_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
-    rsp = ()
-
-    try:
-        query = """ SELECT spotifyDevice FROM users
-                    WHERE roomId = ?; """
-        params = (room_id, )
-
-        cursor.execute(query, params)
-        rsp = cursor.fetchall()
-
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
-        return [row[0] for row in rsp]
-
-def set_user_spotify_device(device_id, user_id):
-    conn = sqlite3.connect('cvdj.db')
-    cursor = conn.cursor()
-
-    try:
-        query = """ UPDATE users
-                    SET spotifyDevice = ?
-                    WHERE userId = ?; """
-        params = (device_id, user_id)
-
-        cursor.execute(query, params)
-        conn.commit()
-        print("Added device ID to user.")
-
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
+    # Get device.
+    def get_device_id(self):
+        return self.device_id
