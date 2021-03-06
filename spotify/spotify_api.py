@@ -22,7 +22,7 @@ class SpotifyApi:
             self.token = None
             self.expire_time = None
             self.user_id = None
-    
+
     ## TOKEN: Authorization code flow - https://developer.spotify.com/documentation/general/guides/authorization-guide/#authorization-code-flow
     # Request refresh and access tokens.
     def __get_access_token(self, code, redirect_uri):
@@ -50,6 +50,12 @@ class SpotifyApi:
         self.token = res['access_token']
         self.expire_time = math.floor(time.time() + res['expires_in'])
 
+    # Get access token
+    def get_token(self):
+        if (time.time() > self.expire_time):
+            self.__refresh_access_token()
+        return self.token
+    
     ## API
     # Get Spotify user id.
     # https://developer.spotify.com/documentation/web-api/#spotify-uris-and-ids
@@ -66,8 +72,7 @@ class SpotifyApi:
     # Search playlists
     # https://developer.spotify.com/documentation/web-api/reference/search/search/
     def search(self, emotion):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+        token = self.get_token()
 
         type = 'playlist'
 
@@ -75,7 +80,7 @@ class SpotifyApi:
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         res = requests.get(search_url, headers=headers).json()
         items = res['playlists']['items']
@@ -89,8 +94,7 @@ class SpotifyApi:
     # Get audio features
     # https://developer.spotify.com/documentation/web-api/reference/#endpoint-get-audio-features
     def get_audio_features(self, track_ids):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+        token = self.get_token()
 
         x = ','.join([i for i in track_ids if i is not None])
 
@@ -98,7 +102,7 @@ class SpotifyApi:
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         res = requests.get(url, headers=headers).json()
 
@@ -111,14 +115,13 @@ class SpotifyApi:
     # Create a playlist
     # https://developer.spotify.com/documentation/web-api/reference/#endpoint-create-playlist
     def create_playlist(self, room_id):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+        token = self.get_token()
             
         url = f'{API_URL}/users/{self.user_id}/playlists'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         payload = {
             'name': f'CVDJ Room #{room_id} Playlist',
@@ -137,14 +140,13 @@ class SpotifyApi:
     # Add track to playlist
     # https://developer.spotify.com/documentation/web-api/reference/#endpoint-add-tracks-to-playlist
     def add_track_to_playlist(self, track_uri, playlist_id):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+        token = self.get_token()
             
         url = f'{API_URL}/playlists/{playlist_id}/tracks'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         payload = {
             'uris': [track_uri]
@@ -160,14 +162,13 @@ class SpotifyApi:
     # Get the track ids that are on the given playlist.
     # https://developer.spotify.com/documentation/web-api/reference/#endpoint-get-playlists-tracks
     def get_playlist_tracks(self, playlist_id):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+        token = self.get_token()
 
         url = f'{API_URL}/playlists/{playlist_id}/tracks'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         res = requests.get(url, headers=headers).json()
         
@@ -180,14 +181,13 @@ class SpotifyApi:
     ## PLAYER - https://developer.spotify.com/documentation/web-api/reference/#category-player
     # Get the user's current playback.
     def get_playback(self):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+        token = self.get_token()
             
         url = f'{PLAYER_URL}'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
 
         try:
@@ -197,14 +197,13 @@ class SpotifyApi:
             return None
 
     # Transfer a user's playback (when a new device is added to room).
-    def spotify_transfer(self, ids, play):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+    def transfer(self, ids, play):
+        token = self.get_token()
 
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         payload = {
             'device_ids': [ids],
@@ -214,15 +213,14 @@ class SpotifyApi:
         return res.status_code
 
     # Start/resume a user's playback.
-    def spotify_play(self, device_id, uri, position):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+    def play(self, device_id, uri, position):
+        token = self.get_token()
 
         url = f'{PLAYER_URL}/play?device_id={device_id}'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         payload = {
             'context_uri': uri,
@@ -232,43 +230,40 @@ class SpotifyApi:
         return res
 
     # Pause a user's playback.
-    def spotify_pause(self, device_id):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+    def pause(self, device_id):
+        token = self.get_token()
 
         url = f'{PLAYER_URL}/pause?device_id={device_id}'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         res = requests.put(url, headers=headers).status_code
         return res
 
     # Skip user's playback to next track.
-    def spotify_next(self, device_id):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+    def skip_next(self, device_id):
+        token = self.get_token()
 
         url = f'{PLAYER_URL}/next?device_id={device_id}'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         res = requests.post(url, headers=headers).status_code
         return res
 
     # Skip user's playback to previous track
-    def spotify_previous(self, device_id):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
+    def skip_previous(self, device_id):
+        token = self.get_token()
 
         url = f'{PLAYER_URL}/previous?device_id={device_id}'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {token}'
         }
         res = requests.post(url, headers=headers).status_code
         return res
