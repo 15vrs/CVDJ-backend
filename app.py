@@ -3,8 +3,6 @@ from flask import json
 from flask.json import jsonify
 
 # Calls to external services
-from spotify.spotify import callback, new_room, join_room, pause, play, skip, previous, set_device, update_room
-from spotify.spotify_helper import playback, transfer
 from azure_cognitive import emotion, emotion_with_stream
 
 app = Flask(__name__)
@@ -59,18 +57,6 @@ def user_join(room_code):
     }
     return rsp
 
-# Call to Face API with image to get emotion data
-@app.route("/emotion/<user_id>", methods=['POST'])
-def determine_emotion(user_id):
-    if (request.data):
-        return emotion_with_stream(user_id, request.data)
-    return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
-
-# Update the room level emotion, and the playlist.
-@app.route('/update_room/<room_id>', methods=['GET'])
-def room_emotion(room_id):
-    return update_room(room_id)
-
 # Add the web browser device to the users database.
 @app.route('/add_device', methods=['POST'])
 def add_device():
@@ -87,6 +73,18 @@ def add_device():
     transfer(room_id, is_playing)
 
     return rsp
+
+# Call to Face API with image to get emotion data
+@app.route("/emotion/<user_id>", methods=['POST'])
+def determine_emotion(user_id):
+    if (request.data):
+        return emotion_with_stream(user_id, request.data)
+    return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
+
+# Update the room level emotion, and the playlist.
+@app.route('/update_room/<room_id>', methods=['GET'])
+def room_emotion(room_id):
+    return update_room(room_id)
 
 # Spotify player API methods below for sync play.
 @app.route('/play/<room_id>', methods=['GET'])

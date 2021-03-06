@@ -18,7 +18,6 @@ DEFAULT_EMOTION_JSON = {
 class User:
 
     def __init__(self, room_id, device_id):
-        self.id = 0
         self.emotion_data = DEFAULT_EMOTION_JSON
         self.device_id = device_id
 
@@ -40,8 +39,6 @@ class User:
         finally:
             cursor.close()
             conn.close()    
-
-        return self.id
 
     # Delete user from database.
     def __del__(self):
@@ -86,6 +83,10 @@ class User:
             conn.close()
 
     ## Getters
+    # Get user id.
+    def get_user_id(self):
+        return self.id
+
     # Get emotion data.
     def get_emotion_data(self):
         return self.emotion_data
