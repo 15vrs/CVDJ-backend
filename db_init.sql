@@ -1,5 +1,4 @@
 -- DROP TABLE rooms;
--- DROP TABLE creators;
 -- DROP TABLE users;
 
 CREATE TABLE IF NOT EXISTS rooms(

@@ -4,8 +4,9 @@ from flask.json import jsonify
 
 # Calls to external services
 from azure_cognitive import emotion, emotion_with_stream
-from spotify.spotify import add_spotify_device, create_spotify_room, join_spotify_room, leave_spotify_room, pause_spotify_room, play_spotify_room, spotify_skip_next, spotify_skip_previous
+import spotify.spotify as spotify
 
+SPOTIFY = spotify
 app = Flask(__name__)
 
 # fix for CORS issue
@@ -38,28 +39,30 @@ def create_room():
     if error is not None:
         return error
 
-    create = create_spotify_room(code, redirect_uri)
+    create = SPOTIFY.create_spotify_room(code, redirect_uri)
     rsp = {
         'roomId': str(create[0]),
         'userId': str(create[1]),
-        'accessToken': str(create[2])
+        'accessToken': str(create[2]),
+        'playlistUri': str(create[3])
     }
     return rsp
 
 # Adding a new user to an existing CVDJ room.
 @app.route('/join_room/<room_code>', methods=['GET'])
 def join_room(room_code):
-    join = join_spotify_room(room_code)
+    join = SPOTIFY.join_spotify_room(room_code)
     rsp = {
-        'userId': str(join[1]),
-        'accessToken': str(join[2])
+        'userId': str(join[0]),
+        'accessToken': str(join[1]),
+        'playlistUri': str(join[2])
     }
     return rsp
 
 # Removing a user from an existing CVDJ room.
 @app.route('/leave_room/<user_id>', methods=['GET'])
 def leave_room(user_id):
-    leave_spotify_room(user_id)
+    SPOTIFY.leave_spotify_room(user_id)
     return ''
 
 # Add the web browser device to the users database.
@@ -67,26 +70,22 @@ def leave_room(user_id):
 def add_device():
     device_id = request.json['deviceId']
     user_id = request.json['userId']
-    add_spotify_device(user_id, device_id)
+    SPOTIFY.add_spotify_device(user_id, device_id)
     return ''
 
 # Spotify player API methods below for sync play.
 @app.route('/play/<room_id>', methods=['GET'])
 def room_play(room_id):
-    rsp = play_spotify_room(room_id)
-    return jsonify(rsp)
+    return SPOTIFY.play_spotify_room(room_id)
 
 @app.route('/pause/<room_id>', methods=['GET'])
 def room_pause(room_id):
-    rsp = pause_spotify_room(room_id)
-    return jsonify(rsp)
+    return SPOTIFY.pause_spotify_room(room_id)
 
 @app.route('/next/<room_id>', methods=['GET'])
 def room_next(room_id):
-    rsp = spotify_skip_next(room_id)
-    return jsonify(rsp)
+    return SPOTIFY.spotify_skip_next(room_id)
 
 @app.route('/previous/<room_id>', methods=['GET'])
 def room_previous(room_id):
-    rsp = spotify_skip_previous(room_id)
-    return jsonify(rsp)
+    return SPOTIFY.spotify_skip_previous(room_id)

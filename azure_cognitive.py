@@ -1,5 +1,3 @@
-import base64
-import glob
 import json
 from io import BytesIO
 from spotify.spotify import update_user_emotions
