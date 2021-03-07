@@ -30,7 +30,7 @@ def create_room():
     if error is not None:
         return error
 
-    create = create_spotify_room(code, redirect_uri)
+    create = spotify.create_spotify_room(code, redirect_uri)
     rsp = {
         'roomId': str(create[0]),
         'userId': str(create[1]),
@@ -42,7 +42,7 @@ def create_room():
 # Adding a new user to an existing CVDJ room.
 @app.route('/join_room/<room_code>', methods=['GET'])
 def join_room(room_code):
-    join = join_spotify_room(room_code)
+    join = spotify.join_spotify_room(room_code)
     rsp = {
         'userId': str(join[0]),
         'accessToken': str(join[1]),
@@ -51,9 +51,9 @@ def join_room(room_code):
     return rsp
 
 # Removing a user from an existing CVDJ room.
-@app.route('/leave_room/<user_id>', methods=['GET'])
-def leave_room(user_id):
-    leave_spotify_room(user_id)
+@app.route('/leave_room/<room_code>/<user_id>', methods=['GET'])
+def leave_room(room_code, user_id):
+    spotify.leave_spotify_room(room_code, user_id)
     return ''
 
 # Add the web browser device to the users database.
@@ -61,22 +61,23 @@ def leave_room(user_id):
 def add_device():
     device_id = request.json['deviceId']
     user_id = request.json['userId']
-    add_spotify_device(user_id, device_id)
+    room_id = request.json['roomId']
+    spotify.add_spotify_device(room_id, user_id, device_id)
     return ''
 
 ## Player
 @app.route('/play/<room_id>', methods=['GET'])
 def room_play(room_id):
-    return play_spotify_room(room_id)
+    return spotify.play_spotify_room(room_id)
 
 @app.route('/pause/<room_id>', methods=['GET'])
 def room_pause(room_id):
-    return pause_spotify_room(room_id)
+    return spotify.pause_spotify_room(room_id)
 
 @app.route('/next/<room_id>', methods=['GET'])
 def room_next(room_id):
-    return spotify_skip_next(room_id)
+    return spotify.spotify_skip_next(room_id)
 
 @app.route('/previous/<room_id>', methods=['GET'])
 def room_previous(room_id):
-    return spotify_skip_previous(room_id)
+    return spotify.spotify_skip_previous(room_id)

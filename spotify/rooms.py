@@ -1,19 +1,18 @@
 # Access "rooms" table in "cvdj.db", to store room level data.
 
 import json
-import pickle
 import sqlite3
 from sqlite3 import Error
 
 # Insert room.
-def insert_room(spotify_room):
+def insert_room(accessToken, refreshToken, tokenExpireTime):
+    query = 'INSERT INTO rooms (accessToken, refreshToken, tokenExpireTime) VALUES (?);'
+    params = (accessToken, refreshToken, tokenExpireTime)
     room_id = 0
+
     try:
         conn = sqlite3.connect('cvdj.db')
         cursor = conn.cursor()
-        query = """ INSERT INTO rooms (spotifyRoom)
-                    VALUES (?); """
-        params = (pickle.dump(spotify_room), )
 
         cursor.execute(query, params)
         room_id = cursor.lastrowid
@@ -27,56 +26,14 @@ def insert_room(spotify_room):
         conn.close()
         return room_id
 
-# 
-def set_room(room_id, spotify_room):
-    try:
-        conn = sqlite3.connect('cvdj.db')
-        cursor = conn.cursor()
-        query = """ UPDATE rooms
-                    SET spotifyRoom = ?
-                    WHERE roomId = ?; """
-        params = (pickle.dump(spotify_room), room_id)
-                
-        cursor.execute(query, params)
-        conn.commit()
-    
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
-
-# 
-def get_room(room_id):
-    spotify_room = None
-    try:
-        conn = sqlite3.connect('cvdj.db')
-        cursor = conn.cursor()
-        query = """ SELECT spotifyRoom FROM rooms
-                    WHERE roomId = ?; """
-        params = (room_id, )
-                
-        cursor.execute(query, params)
-        rsp = cursor.fetchone()
-        spotify_room = pickle.loads(rsp)
-    
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
-        return spotify_room
-
 # Delete room.
 def delete_room(room_id):
+    query = 'DELETE FROM rooms WHERE roomId = ?; '
+    params = (room_id, )
+
     try:
         conn = sqlite3.connect('cvdj.db')
         cursor = conn.cursor()
-        query = """ DELETE FROM rooms
-                    WHERE roomId = ?; """
-        params = (room_id, )
 
         cursor.execute(query, params)
         conn.commit()
@@ -87,6 +44,55 @@ def delete_room(room_id):
     finally:
         cursor.close()
         conn.close()
+
+# Update room from a dict.
+def set_room(room_id, room):
+    sql = ', '.join('='.join(i) for i in room.items())
+    query = 'UPDATE table SET ? WHERE roomId = ?'
+    params = (sql, room_id)
+
+    try:
+        conn = sqlite3.connect('cvdj.db')
+        cursor = conn.cursor()
+
+        cursor.execute(query, params)
+        conn.commit()
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+# Get room as dict.
+def get_room(room_id):
+    query = 'SELECT 1 FROM rooms WHERE roomId = ?'
+    params = (room_id, )
+    room = dict()
+
+    try:
+        conn = sqlite3.connect('cvdj,db')
+        conn.row_factory = __dict_factory
+        cursor = conn.cursor()
+
+        cursor.execute(query, params)
+        room = dict(cursor.fetchone())
+    
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+        return room
+
+## Private functions.
+def __dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
 
 # Select users emotions list.
 def get_users_emotions(room_id):
@@ -131,3 +137,84 @@ def get_spotify_devices(room_id):
         cursor.close()
         conn.close()
         return device_ids
+# # Set tokens.
+# def set_tokens(room_id, refresh_token, access_token, expire_time):
+#     try:
+#         conn = sqlite3.connect('cvdj.db')
+#         cursor = conn.cursor()
+#         query = """ UPDATE rooms
+#                     SET spotifyRefreshToken = ?, spotifyAccessToken = ?, spotifyTokenExpireTime = ?
+#                     WHERE roomId = ?; """
+#         params = (refresh_token, access_token, expire_time, room_id)
+
+#         cursor.execute(query, params)
+#         conn.commit()
+
+#     except Error as e:
+#         print(e)
+
+#     finally:
+#         cursor.close()
+#         conn.close()
+
+# # Get tokens.
+# def get_tokens(room_id):
+#     refresh_token, access_token, expire_time = None, None, None
+#     try:
+#         conn = sqlite3.connect('cvdj.db')
+#         cursor = conn.cursor()
+#         query = """ SELECT spotifyAccessToken, spotifyRefreshToken, spotifyTokenExpireTime FROM rooms
+#                     WHERE roomId = ?; """
+#         params = (room_id, )
+                
+#         cursor.execute(query, params)
+#         refresh_token, access_token, expire_time = cursor.fetchone()
+    
+#     except Error as e:
+#         print(e)
+
+#     finally:
+#         cursor.close()
+#         conn.close()
+#         return refresh_token, access_token, expire_time
+
+# # Set playlist id.
+# def set_playlist(room_id, playlist_id):
+#     try:
+#         conn = sqlite3.connect('cvdj.db')
+#         cursor = conn.cursor()
+#         query = """ UPDATE rooms
+#                     SET spotifyPlaylistId = ?
+#                     WHERE roomId = ?; """
+#         params = (playlist_id, room_id)
+
+#         cursor.execute(query, params)
+#         conn.commit()
+
+#     except Error as e:
+#         print(e)
+
+#     finally:
+#         cursor.close()
+#         conn.close()
+
+# # Get playlist id.
+# def get_playlist(room_id):
+#     playlist_id = None
+#     try:
+#         conn = sqlite3.connect('cvdj.db')
+#         cursor = conn.cursor()
+#         query = """ SELECT spotifyPlaylistId FROM rooms
+#                     WHERE roomId = ?; """
+#         params = (room_id, )
+                
+#         cursor.execute(query, params)
+#         playlist_id = cursor.fetchone()
+    
+#     except Error as e:
+#         print(e)
+
+#     finally:
+#         cursor.close()
+#         conn.close()
+#         return playlist_id

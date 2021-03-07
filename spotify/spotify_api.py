@@ -14,7 +14,7 @@ CLIENT_SECRET = '9cbf5485772e4527b806a5619a7d6f39'
 
 ## TOKEN: Authorization code flow - https://developer.spotify.com/documentation/general/guides/authorization-guide/#authorization-code-flow
 # Request refresh and access tokens.
-def get_access_token(code, redirect_uri):
+def get_access_tokens(code, redirect_uri):
     refresh_token = None
     access_token = None
     expire_time = 0
@@ -35,7 +35,7 @@ def get_access_token(code, redirect_uri):
         return refresh_token, access_token, expire_time
 
 # Request a refreshed access token.
-def refresh_access_token(refresh_token):
+def refresh_access_tokens(refresh_token):
     access_token = None
     expire_time = 0
 
