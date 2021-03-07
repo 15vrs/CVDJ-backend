@@ -1,10 +1,9 @@
 import json
 from io import BytesIO
-from spotify.spotify import update_user_emotions
+from spotify.users import set_emotion_data
 
 import requests
 from azure.cognitiveservices.vision.face import FaceClient
-from flask import jsonify
 from msrest.authentication import CognitiveServicesCredentials
 
 # Azure properties
@@ -68,7 +67,7 @@ def average_emotion_data(userId, faces):
         emotions["surprise"] += face.face_attributes.emotion.surprise
     for e in emotions:
         emotions[e] /= len(faces)
-    update_user_emotions(userId, emotions)
+    set_emotion_data(userId, emotions)
     return emotions
 
 
@@ -83,6 +82,6 @@ def save_emotion_data(userId, face):
         "sadness": face.sadness,
         "surprise": face.surprise
     })
-    update_user_emotions(userId, emotion)
+    set_emotion_data(userId, emotion)
     return emotion
 

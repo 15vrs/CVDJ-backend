@@ -1,15 +1,10 @@
 from flask import Flask, request
-from flask import json
-from flask.json import jsonify
-
-# Calls to external services
 from azure_cognitive import emotion, emotion_with_stream
-import spotify.spotify as spotify
+from spotify.spotify import create_spotify_room, join_spotify_room, leave_spotify_room, add_spotify_device, play_spotify_room, pause_spotify_room, spotify_skip_next, spotify_skip_previous
 
-SPOTIFY = spotify
 app = Flask(__name__)
 
-# fix for CORS issue
+# Fix for CORS issue.
 @app.after_request
 def after_request(response):
   response.headers.add('Access-Control-Allow-Origin', '*')
@@ -17,18 +12,14 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
   return response
 
-# BE home route.
-@app.route('/')
-def home_page():
-    return 'CVDJ!'
-
-# Call to Face API with image to get emotion data
+# Call to Face API with image to get emotion data.
 @app.route("/emotion/<user_id>", methods=['POST'])
 def determine_emotion(user_id):
     if (request.data):
         return emotion_with_stream(user_id, request.data)
     return emotion('https://image.cnbcfm.com/api/v1/image/106202554-1571960310657gettyimages-1182969985.jpeg')
 
+## Calls to Spotify.
 # Logging a user into Spotify to obtain access to their Spotify account.
 @app.route('/create_room', methods=['POST'])
 def create_room():
@@ -39,7 +30,7 @@ def create_room():
     if error is not None:
         return error
 
-    create = SPOTIFY.create_spotify_room(code, redirect_uri)
+    create = create_spotify_room(code, redirect_uri)
     rsp = {
         'roomId': str(create[0]),
         'userId': str(create[1]),
@@ -51,7 +42,7 @@ def create_room():
 # Adding a new user to an existing CVDJ room.
 @app.route('/join_room/<room_code>', methods=['GET'])
 def join_room(room_code):
-    join = SPOTIFY.join_spotify_room(room_code)
+    join = join_spotify_room(room_code)
     rsp = {
         'userId': str(join[0]),
         'accessToken': str(join[1]),
@@ -62,7 +53,7 @@ def join_room(room_code):
 # Removing a user from an existing CVDJ room.
 @app.route('/leave_room/<user_id>', methods=['GET'])
 def leave_room(user_id):
-    SPOTIFY.leave_spotify_room(user_id)
+    leave_spotify_room(user_id)
     return ''
 
 # Add the web browser device to the users database.
@@ -70,22 +61,22 @@ def leave_room(user_id):
 def add_device():
     device_id = request.json['deviceId']
     user_id = request.json['userId']
-    SPOTIFY.add_spotify_device(user_id, device_id)
+    add_spotify_device(user_id, device_id)
     return ''
 
-# Spotify player API methods below for sync play.
+## Player
 @app.route('/play/<room_id>', methods=['GET'])
 def room_play(room_id):
-    return SPOTIFY.play_spotify_room(room_id)
+    return play_spotify_room(room_id)
 
 @app.route('/pause/<room_id>', methods=['GET'])
 def room_pause(room_id):
-    return SPOTIFY.pause_spotify_room(room_id)
+    return pause_spotify_room(room_id)
 
 @app.route('/next/<room_id>', methods=['GET'])
 def room_next(room_id):
-    return SPOTIFY.spotify_skip_next(room_id)
+    return spotify_skip_next(room_id)
 
 @app.route('/previous/<room_id>', methods=['GET'])
 def room_previous(room_id):
-    return SPOTIFY.spotify_skip_previous(room_id)
+    return spotify_skip_previous(room_id)

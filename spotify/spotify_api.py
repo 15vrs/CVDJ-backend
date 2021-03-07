@@ -3,6 +3,8 @@ import requests
 import time
 import json
 import math
+import urllib.parse as urlparse
+from urllib.parse import urlencode
 
 # Global variables
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
@@ -17,11 +19,22 @@ class SpotifyApi:
         try:
             self.__get_access_token(code, redirect_uri)
             self.__get_user_id()
+            self.__create_playlist()
         except:
             self.refresh_token = None
-            self.token = None
+            self.access_token = None
             self.expire_time = None
+
             self.user_id = None
+            self.playlist_id = None
+
+    # Get access token.
+    def get_token(self):
+        try:
+            if (time.time() > self.expire_time):
+                self.__refresh_access_token()
+        finally:
+            return self.access_token
 
     ## TOKEN: Authorization code flow - https://developer.spotify.com/documentation/general/guides/authorization-guide/#authorization-code-flow
     # Request refresh and access tokens.
@@ -35,7 +48,7 @@ class SpotifyApi:
         res = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload).json()
 
         self.refresh_token = res['refresh_token']
-        self.token = res['access_token']
+        self.access_token = res['access_token']
         self.expire_time = math.floor(time.time() + res['expires_in'])
 
     # Request a refreshed access token.
@@ -47,15 +60,9 @@ class SpotifyApi:
 
         res = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload).json()
 
-        self.token = res['access_token']
+        self.access_token = res['access_token']
         self.expire_time = math.floor(time.time() + res['expires_in'])
 
-    # Get access token
-    def get_token(self):
-        if (time.time() > self.expire_time):
-            self.__refresh_access_token()
-        return self.token
-    
     ## API
     # Get Spotify user id.
     # https://developer.spotify.com/documentation/web-api/#spotify-uris-and-ids
@@ -64,57 +71,14 @@ class SpotifyApi:
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {self.access_token}'
         }
         res = requests.get(url, headers=headers).json()
         self.user_id = res['id']
     
-    # Search playlists
-    # https://developer.spotify.com/documentation/web-api/reference/search/search/
-    def search(self, emotion):
-        token = self.get_token()
-
-        type = 'playlist'
-
-        search_url = f'{API_URL}/search?q={emotion}&type={type}'
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {token}'
-        }
-        res = requests.get(search_url, headers=headers).json()
-        items = res['playlists']['items']
-
-        try:
-            playlist_ids = [i['id'] for i in items if i['id'] is not None]
-            return playlist_ids
-        except:
-            return None
-
-    # Get audio features
-    # https://developer.spotify.com/documentation/web-api/reference/#endpoint-get-audio-features
-    def get_audio_features(self, track_ids):
-        token = self.get_token()
-
-        x = ','.join([i for i in track_ids if i is not None])
-
-        url = f'{API_URL}/audio-features/?ids={x}'
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {token}'
-        }
-        res = requests.get(url, headers=headers).json()
-
-        try:
-            audio_features = res['audio_features']
-            return audio_features
-        except:
-            return None
-
     # Create a playlist
     # https://developer.spotify.com/documentation/web-api/reference/#endpoint-create-playlist
-    def create_playlist(self, room_id):
+    def __create_playlist(self, room_id):
         token = self.get_token()
             
         url = f'{API_URL}/users/{self.user_id}/playlists'
@@ -130,39 +94,60 @@ class SpotifyApi:
             'description': None
         }
         res = requests.post(url, headers=headers, data=json.dumps(payload)).json()
+        self.playlist_id = res['id']
 
-        try:
-            playlist_id = res['id']
-            return playlist_id
-        except:
-            return None
-
-    # Add track to playlist
-    # https://developer.spotify.com/documentation/web-api/reference/#endpoint-add-tracks-to-playlist
-    def add_track_to_playlist(self, track_uri, playlist_id):
+    # Search playlists
+    # https://developer.spotify.com/documentation/web-api/reference/search/search/
+    def search_playlist(self, query):
         token = self.get_token()
-            
-        url = f'{API_URL}/playlists/{playlist_id}/tracks'
+        playlist_ids = []
+
+        params = {
+            'q': query,
+            'type': 'playlist',
+            'limit': 50, # maximum limit
+        }
+
+        search_url = f'{API_URL}/search?q={query}'
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {token}'
         }
-        payload = {
-            'uris': [track_uri]
-        }
-        res = requests.post(url, headers=headers, data=json.dumps(payload)).json()
+        res = requests.get(search_url, headers=headers).json()
+        items = res['playlists']['items']
 
         try:
-            print(res)
-            return res
-        except:
-            return None
+            playlist_ids = [i['id'] for i in items if i['id'] is not None]
+        finally:
+            return playlist_ids
+
+    # Get audio features
+    # https://developer.spotify.com/documentation/web-api/reference/#endpoint-get-audio-features
+    def get_audio_features(self, track_ids):
+        token = self.get_token()
+        audio_features = []
+
+        x = ','.join([i for i in track_ids if i is not None])
+
+        url = f'{API_URL}/audio-features/?ids={x}'
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+        res = requests.get(url, headers=headers).json()
+
+        try:
+            audio_features = list(res['audio_features'])
+        finally:
+            return audio_features
 
     # Get the track ids that are on the given playlist.
     # https://developer.spotify.com/documentation/web-api/reference/#endpoint-get-playlists-tracks
     def get_playlist_tracks(self, playlist_id):
         token = self.get_token()
+        track_ids = []
 
         url = f'{API_URL}/playlists/{playlist_id}/tracks'
         headers = {
@@ -174,14 +159,30 @@ class SpotifyApi:
         
         try:
             track_ids = [i['track']['id'] for i in res['items'] if i['track'] is not None]
+        finally:
             return track_ids
-        except:
-            return None
+
+    # Add track to playlist
+    # https://developer.spotify.com/documentation/web-api/reference/#endpoint-add-tracks-to-playlist
+    def add_track_to_playlist(self, track_id):
+        token = self.get_token()
+            
+        url = f'{API_URL}/playlists/{self.playlist_id}/tracks'
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+        payload = {
+            'uris': [f'spotify:track:{track_id}']
+        }
+        requests.post(url, headers=headers, data=json.dumps(payload)).json()
 
     ## PLAYER - https://developer.spotify.com/documentation/web-api/reference/#category-player
     # Get the user's current playback.
     def get_playback(self):
         token = self.get_token()
+        playback_data = None
             
         url = f'{PLAYER_URL}'
         headers = {
@@ -192,11 +193,10 @@ class SpotifyApi:
 
         try:
             playback_data = requests.get(url, headers=headers).json()
+        finally:
             return playback_data
-        except:
-            return None
 
-    # Transfer a user's playback (when a new device is added to room).
+    # Transfer a user's playback.
     def transfer(self, ids, play):
         token = self.get_token()
 
@@ -209,8 +209,7 @@ class SpotifyApi:
             'device_ids': [ids],
             'play': play
         }
-        res = requests.put(PLAYER_URL, headers=headers, data=json.dumps(payload))
-        return res.status_code
+        requests.put(PLAYER_URL, headers=headers, data=json.dumps(payload))
 
     # Start/resume a user's playback.
     def play(self, device_id, uri, position):
@@ -226,8 +225,7 @@ class SpotifyApi:
             'context_uri': uri,
             'position_ms': position
         }
-        res = requests.put(url, headers=headers, data=json.dumps(payload)).status_code
-        return res
+        requests.put(url, headers=headers, data=json.dumps(payload))
 
     # Pause a user's playback.
     def pause(self, device_id):
@@ -239,8 +237,7 @@ class SpotifyApi:
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {token}'
         }
-        res = requests.put(url, headers=headers).status_code
-        return res
+        requests.put(url, headers=headers)
 
     # Skip user's playback to next track.
     def skip_next(self, device_id):
@@ -252,8 +249,7 @@ class SpotifyApi:
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {token}'
         }
-        res = requests.post(url, headers=headers).status_code
-        return res
+        requests.post(url, headers=headers)
 
     # Skip user's playback to previous track
     def skip_previous(self, device_id):
@@ -265,5 +261,4 @@ class SpotifyApi:
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {token}'
         }
-        res = requests.post(url, headers=headers).status_code
-        return res
+        requests.post(url, headers=headers)
