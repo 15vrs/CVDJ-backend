@@ -1,6 +1,6 @@
 import json
 from io import BytesIO
-from spotify.users import set_emotion_data
+import spotify.users as users
 
 import requests
 from azure.cognitiveservices.vision.face import FaceClient

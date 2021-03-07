@@ -1,15 +1,11 @@
-from spotify.users import insert_user, delete_user, set_device_id
-from spotify.spotify_room import SpotifyRoom
-
-# Keep track of SpotifyRoom objects.
-rooms = dict()
+import spotify.users as users
+import spotify.rooms as rooms
 
 # Route: /create_room.
 def create_spotify_room(code, redirect_uri):
-    room = SpotifyRoom(code, redirect_uri)
-    rooms[room.id] = room
-    user_id = insert_user(room.id)
-    return room.id, user_id, room.get_token(), room.playlist_id
+    room_id = insert_room()
+    user_id = insert_user(room_id)
+    return room_id, user_id, room.get_token(), room.playlist_id
 
 # Route: /join_room.
 def join_spotify_room(room_id):

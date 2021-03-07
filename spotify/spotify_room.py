@@ -1,51 +1,49 @@
 from threading import Timer
-from spotify.spotify_api import SpotifyApi
-from spotify.rooms import insert_room, delete_room, set_emotion, get_users_emotions, get_spotify_devices
+import time
+import spotify.spotify_api as spotify_api
 
 THRESHOLD = 0.09
 
 ## Spotify room object.
-class SpotifyRoom(SpotifyApi):
+class SpotifyRoom():
 
     def __init__(self, code, redirect_uri):
-        self.id = insert_room() # id, emotion, users emotions set, users device_ids set
-        super().__init__(code, redirect_uri)
-        self.room_update()
+        self.refresh_token, self.access_token, self.expire_time = spotify_api.get_access_token(code, redirect_uri)
+        self.user_id = None
+        self.playlist_id = None
 
-        # Playback data.
+        # Player data.
         self.is_playing = False
         self.progress = 0
         self.song = None
         self.artist = None
         self.album_art = None
 
-    def __del__(self):
-        delete_room(self.id)
-
     # Transfer playback to new device id.
-    def room_transfer(self, device_id):
-        self.transfer(device_id, self.is_playing)
+    def room_transfer(self):
+        if time.time() > self.expire_time:
+            self.access_token, self.expire_time = spotify_api.refresh_access_token(self.refresh_token)
 
-        # Update playback data.
+        playback_data = spotify_api.get_playback(self.access_token)
+
         self.is_playing = False
-        playback_data = self.get_playback()
         self.progress = playback_data['progress_ms']
         self.song = playback_data['item']['name']
         self.artist = playback_data['item']['artists'][0]['name']
         self.album_art = playback_data['item']['album']['images'][0]['url']
 
     # Start/resume play for all users.
-    def room_play(self):
+    def room_play(self, devices):
+        if time.time() > self.expire_time:
+            self.access_token, self.expire_time = spotify_api.refresh_access_token(self.refresh_token)
 
         # Avoid call if room is already playing.
         if not self.is_playing:
-            devices = get_spotify_devices(self.id)
             for i in devices:
                 if i is not None:
-                    self.play(i, self.playlist_id, self.progress)
+                    spotify_api.play(self.access_token, i, self.playlist_id, self.progress)
+            playback_data = spotify_api.get_playback(self.access_token)
 
-            # Update playback data.
-            playback_data = self.get_playback()
             self.is_playing = False
             self.progress = playback_data['progress_ms']
             self.song = playback_data['item']['name']
@@ -59,15 +57,16 @@ class SpotifyRoom(SpotifyApi):
         }
 
     # Pause play for all users.
-    def room_pause(self):
-        devices = get_spotify_devices(self.id)
+    def room_pause(self, devices):
+        if time.time() > self.expire_time:
+            self.access_token, self.expire_time = spotify_api.refresh_access_token(self.refresh_token)
+
         for i in devices:
             if i is not None:
-                self.pause(i)
+                spotify_api.pause(self.access_token, i)
+        playback_data = spotify_api.get_playback(self.access_token)
 
-        # Update playback data.
         self.is_playing = False
-        playback_data = self.get_playback()
         self.progress = playback_data['progress_ms']
         self.song = playback_data['item']['name']
         self.artist = playback_data['item']['artists'][0]['name']
@@ -80,15 +79,17 @@ class SpotifyRoom(SpotifyApi):
         }
 
     # Skip next for all users.
-    def room_skip_next(self):
-        devices = get_spotify_devices(self.id)
+    def room_skip_next(self, devices):
+        if time.time() > self.expire_time:
+            self.access_token, self.expire_time = spotify_api.refresh_access_token(self.refresh_token)
+
+
         for i in devices:
             if i is not None:
-                self.skip_next(i)
+                spotify_api.skip_next(self.access_token, i)
+        playback_data = spotify_api.get_playback(self.access_token)
 
-        # Update playback data.
         self.is_playing = False
-        playback_data = self.get_playback()
         self.progress = playback_data['progress_ms']
         self.song = playback_data['item']['name']
         self.artist = playback_data['item']['artists'][0]['name']
@@ -101,15 +102,16 @@ class SpotifyRoom(SpotifyApi):
         }
 
     # Skip previous for all users.
-    def room_skip_previous(self):
-        devices = get_spotify_devices(self.id)
+    def room_skip_previous(self, devices):
+        if time.time() > self.expire_time:
+            self.access_token, self.expire_time = spotify_api.refresh_access_token(self.refresh_token)
+
         for i in devices:
             if i is not None:
-                self.skip_previous(i)
+                spotify_api.skip_previous(self.access_token, i)
+        playback_data = spotify_api.get_playback(self.access_token)
 
-        # Update playback data.
         self.is_playing = False
-        playback_data = self.get_playback()
         self.progress = playback_data['progress_ms']
         self.song = playback_data['item']['name']
         self.artist = playback_data['item']['artists'][0]['name']
@@ -122,30 +124,33 @@ class SpotifyRoom(SpotifyApi):
         }
 
     # Update room emotion and playlist.
-    def room_update(self):
+    def room_update(self, user_emotions):
+        if time.time() > self.expire_time:
+            self.access_token, self.expire_time = spotify_api.refresh_access_token(self.refresh_token)
+
         #TODO:
         Timer(5.0, self.room_update).start()
         print("DEBUG")
 
-        user_emotions = get_users_emotions(self.id)
         num_users = len(user_emotions)
         if num_users > 0:
             emotions = {'anger': 0, 'contempt': 0, 'disgust': 0, 'fear': 0, 'happiness': 0, 'neutral':0, 'sadness': 0, 'surprise': 0}
+            for i in user_emotions:
+                print(i)
             for e in emotions:
                 emotions[e] = sum([i[e] for i in user_emotions]) / num_users
             emotion = max(emotions, key=emotions.get)
-            set_emotion(emotion)
 
-            existing = self.get_playlist_tracks(self.playlist_id)
+            existing = spotify_api.get_playlist_tracks(self.access_token, self.playlist_id)
             energy = self.__room_energy(emotions)
             valence = self.__room_valence(emotions)
 
             # Find a new track id to add to playlist.
             new_track_id = 0
-            playlist_ids = self.search_playlist(emotion)
+            playlist_ids = spotify_api.search_playlist(self.access_token, emotion)
             for i in playlist_ids:
-                track_ids = self.get_playlist_tracks(i)
-                audio_features = self.get_audio_features(track_ids)
+                track_ids = spotify_api.get_playlist_tracks(self.access_token, i)
+                audio_features = spotify_api.get_audio_features(self.access_token, track_ids)
                 for j in audio_features:
                     check_duplicate = (j['id'] in existing)
                     check_energy = (abs(j['energy'] - energy) < THRESHOLD)
@@ -155,7 +160,7 @@ class SpotifyRoom(SpotifyApi):
                         break
 
             # Add new track to playlist.
-            self.add_track_to_playlist(new_track_id, self.playlist_id)
+            spotify_api.add_track_to_playlist(self.access_token, self.playlist_id, new_track_id)
 
     ## Private helper functions.
     def __room_energy(self, emotions):

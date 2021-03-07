@@ -1,6 +1,6 @@
 from flask import Flask, request
 from azure_cognitive import emotion, emotion_with_stream
-from spotify.spotify import create_spotify_room, join_spotify_room, leave_spotify_room, add_spotify_device, play_spotify_room, pause_spotify_room, spotify_skip_next, spotify_skip_previous
+import spotify.spotify as spotify
 
 app = Flask(__name__)
 
