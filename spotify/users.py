@@ -4,7 +4,7 @@ import json
 import sqlite3
 from sqlite3 import Error
 
-DEFAULT_EMOTION_JSON = {
+DEFAULT_EMOTION_JSON = json.dumps({
         "anger": 0.0,
         "contempt": 0.0,
         "disgust": 0.0,
@@ -13,7 +13,7 @@ DEFAULT_EMOTION_JSON = {
         "neutral": 1.0,
         "sadness": 0.0,
         "surprise": 0.0
-    }
+    })
 
 # Insert user in database.
 def insert_user(room_id):
@@ -23,7 +23,7 @@ def insert_user(room_id):
         cursor = conn.cursor()
         query = """ INSERT INTO users (roomId, emotionData)
                     VALUES (?, ?); """
-        params = (room_id, json.dumps(DEFAULT_EMOTION_JSON))
+        params = (room_id, DEFAULT_EMOTION_JSON)
 
         cursor.execute(query, params)
         user_id = cursor.lastrowid
@@ -64,7 +64,7 @@ def set_emotion_data(user_id, emotion_data):
         query = """ UPDATE users
                     SET emotionData = ?
                     WHERE userId = ?; """
-        params = (json.dumps(emotion_data), user_id)
+        params = (emotion_data, user_id)
 
         cursor.execute(query, params)
         conn.commit()

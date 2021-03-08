@@ -67,7 +67,7 @@ def average_emotion_data(userId, faces):
         emotions["surprise"] += face.face_attributes.emotion.surprise
     for e in emotions:
         emotions[e] /= len(faces)
-    set_emotion_data(userId, emotions)
+    users.set_emotion_data(userId, emotions)
     return emotions
 
 
@@ -82,6 +82,6 @@ def save_emotion_data(userId, face):
         "sadness": face.sadness,
         "surprise": face.surprise
     })
-    set_emotion_data(userId, emotion)
+    users.set_emotion_data(userId, emotion)
     return emotion
 

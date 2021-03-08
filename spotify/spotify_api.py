@@ -1,4 +1,5 @@
 # Handling calls to Spotify Web API.
+
 import requests
 import time
 import json
@@ -25,12 +26,11 @@ def get_access_tokens(code, redirect_uri):
         'redirect_uri': f'{redirect_uri}/callback/'
     }
 
-    res = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload).json()
-
     try:
+        res = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload).json()
         refresh_token = res['refresh_token']
         access_token = res['access_token']
-        expire_time = math.floor(time.time() + res['expires_in'])
+        expire_time = math.floor(time.time() + float(res['expires_in']))
     finally:
         return refresh_token, access_token, expire_time
 
@@ -44,11 +44,10 @@ def refresh_access_tokens(refresh_token):
         'refresh_token': refresh_token
     }
 
-    res = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload).json()
-
     try:
+        res = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload).json()
         access_token = res['access_token']
-        expire_time = math.floor(time.time() + res['expires_in'])
+        expire_time = math.floor(time.time() + float(res['expires_in']))
     finally:
         return access_token, expire_time
 
@@ -64,9 +63,9 @@ def get_spotify_id(access_token):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
-    res = requests.get(url, headers=headers).json()
 
     try:
+        res = requests.get(url, headers=headers).json()
         spotify_id = res['id']
     finally:
         return spotify_id
@@ -88,9 +87,9 @@ def create_playlist(access_token, room_id, spotify_id):
         'collaborative': False,
         'description': None
     }
-    res = requests.post(url, headers=headers, data=json.dumps(payload)).json()
 
     try:
+        res = requests.post(url, headers=headers, data=json.dumps(payload)).json()
         playlist_id = res['id']
     finally:
         return playlist_id
@@ -111,10 +110,10 @@ def search_playlist(access_token, query):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
-    res = requests.get(search_url, headers=headers).json()
-    items = res['playlists']['items']
 
     try:
+        res = requests.get(search_url, headers=headers).json()
+        items = res['playlists']['items']
         playlist_ids = [i['id'] for i in items if i['id'] is not None]
     finally:
         return playlist_ids
@@ -132,9 +131,9 @@ def get_audio_features(access_token, track_ids):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
-    res = requests.get(url, headers=headers).json()
 
     try:
+        res = requests.get(url, headers=headers).json()
         audio_features = list(res['audio_features'])
     finally:
         return audio_features
@@ -150,9 +149,9 @@ def get_playlist_tracks(access_token, playlist_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
-    res = requests.get(url, headers=headers).json()
     
     try:
+        res = requests.get(url, headers=headers).json()
         track_ids = [i['track']['id'] for i in res['items'] if i['track'] is not None]
     finally:
         return track_ids
@@ -169,7 +168,7 @@ def add_track_to_playlist(access_token, playlist_id, track_id):
     payload = {
         'uris': [f'spotify:track:{track_id}']
     }
-    requests.post(url, headers=headers, data=json.dumps(payload)).json()
+    rsp = requests.post(url, headers=headers, data=json.dumps(payload)).json()
 
 ## PLAYER - https://developer.spotify.com/documentation/web-api/reference/#category-player
 # Get the user's current playback.
@@ -213,7 +212,8 @@ def play(access_token, device_id, uri, position):
         'context_uri': uri,
         'position_ms': position
     }
-    requests.put(url, headers=headers, data=json.dumps(payload))
+    rsp = requests.put(url, headers=headers, data=json.dumps(payload))
+    print(rsp)
 
 # Pause a user's playback.
 def pause(access_token, device_id):
@@ -223,7 +223,8 @@ def pause(access_token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
-    requests.put(url, headers=headers)
+    rsp = requests.put(url, headers=headers)
+    print(rsp)
 
 # Skip user's playback to next track.
 def skip_next(access_token, device_id):
@@ -233,7 +234,8 @@ def skip_next(access_token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
-    requests.post(url, headers=headers)
+    rsp = requests.post(url, headers=headers)
+    print(rsp)
 
 # Skip user's playback to previous track
 def skip_previous(access_token, device_id):
@@ -243,4 +245,5 @@ def skip_previous(access_token, device_id):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
-    requests.post(url, headers=headers)
+    rsp = requests.post(url, headers=headers)
+    print(rsp)
