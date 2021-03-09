@@ -25,29 +25,18 @@ def determine_emotion(user_id):
 def create_room():
     error = request.args.get('error')
     code = request.args.get('code')
-    redirect_uri = request.data.decode('utf-8') 
+    redirect_uri = request.data.decode('utf-8')
 
     if error is not None:
         return error
 
-    create = spotify.create_spotify_room(code, redirect_uri)
-    rsp = {
-        'roomId': str(create[0]),
-        'userId': str(create[1]),
-        'accessToken': str(create[2]),
-        'playlistUri': str(create[3])
-    }
+    rsp = spotify.create_spotify_room(code, redirect_uri)
     return rsp
 
 # Adding a new user to an existing CVDJ room.
 @app.route('/join_room/<room_code>', methods=['GET'])
 def join_room(room_code):
-    join = spotify.join_spotify_room(room_code)
-    rsp = {
-        'userId': str(join[0]),
-        'accessToken': str(join[1]),
-        'playlistUri': str(join[2])
-    }
+    rsp = spotify.join_spotify_room(room_code)
     return rsp
 
 # Removing a user from an existing CVDJ room.
@@ -68,16 +57,20 @@ def add_device():
 ## Player
 @app.route('/play/<room_id>', methods=['GET'])
 def room_play(room_id):
-    return spotify.play_spotify_room(room_id)
+    rsp = spotify.play_spotify_room(room_id)
+    return rsp
 
 @app.route('/pause/<room_id>', methods=['GET'])
 def room_pause(room_id):
-    return spotify.pause_spotify_room(room_id)
+    rsp = spotify.pause_spotify_room(room_id)
+    return rsp
 
 @app.route('/next/<room_id>', methods=['GET'])
 def room_next(room_id):
-    return spotify.spotify_skip_next(room_id)
+    rsp = spotify.spotify_skip_next(room_id)
+    return rsp
 
 @app.route('/previous/<room_id>', methods=['GET'])
 def room_previous(room_id):
-    return spotify.spotify_skip_previous(room_id)
+    rsp = spotify.spotify_skip_previous(room_id)
+    return rsp

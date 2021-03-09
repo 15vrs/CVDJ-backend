@@ -48,7 +48,6 @@ def delete_room(room_id):
 
 # Update room from a dict.
 def set_room(room_id, room):
-    print(room['playlist_id'])
     try:
         conn = sqlite3.connect('cvdj.db')
         cursor = conn.cursor()
@@ -57,10 +56,9 @@ def set_room(room_id, room):
                         refreshToken = ?,
                         tokenExpireTime = ?,
                         playlistId = ?,
-                        playerProgress = ?,
                         isPlaying = ?
                     WHERE roomId = ?; """
-        params = (room['access_token'], room['refresh_token'], room['expire_time'], room['playlist_id'], room['progress'], room['is_playing'], room_id)
+        params = (room['access_token'], room['refresh_token'], room['expire_time'], room['playlist_id'], room['is_playing'], room_id)
 
         cursor.execute(query, params)
         conn.commit()
@@ -96,7 +94,7 @@ def get_room(room_id):
         conn.close()
         return room
 
-# Private function.
+# Private function for row factory.
 def __dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):

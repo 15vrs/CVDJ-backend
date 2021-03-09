@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS rooms(
     refreshToken TEXT,
     tokenExpireTime TEXT,
     playlistId TEXT,
-    playerProgress INTEGER NOT NULL DEFAULT(0),
     isPlaying INTEGER NOT NULL DEFAULT(0)
 );
 
