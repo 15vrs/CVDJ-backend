@@ -1,182 +1,256 @@
-# Handle all calls directly from app.py.
+import time
+import spotify.users as users
+import spotify.rooms as rooms
+import spotify.spotify_api as api
 
-from spotify.spotify_api import add_track_to_playlist, create_playlist, get_playlist_tracks, get_user_id, spotify_next, spotify_pause, spotify_play, spotify_previous
-from spotify.spotify_helper import get_tokens, playback, player_data, track_recommendations
-from spotify.spotify_auth import get_access_token
-from database.users import add_new_user, add_new_user_to_room, add_user_to_room, get_spotify_devices, get_user_emotion, set_user_spotify_device
-from database.creators import add_new_creator, add_creator_to_room
-from database.rooms import add_new_room, add_playlist_to_room, update_room_emotion, get_playlist_from_room
+THRESHOLD = 0.09
 
-# Logging a user in. Return user ID (not creator ID).
-def callback(code, redirect_uri):
-    user_id = add_new_user()
-    access_token, refresh_token, start_time = get_access_token(code, redirect_uri)
-    add_new_creator(user_id, access_token, refresh_token, start_time)
-    return user_id
+# Route: /create_room.
+def create_spotify_room(code, redirect_uri):
+    refresh_token, access_token, expire_time = api.get_access_tokens(code, redirect_uri)
 
-# Joining a room. Return room's playlist and user ID.
-def join_room(room_id):
-    playlist_id = get_playlist_from_room(room_id) #DB
-    user_id = add_new_user_to_room(room_id)
+    room_id = rooms.insert_room()
+    user_id = users.insert_user(room_id)
 
-    # Get tokens
-    access_token = get_tokens("room", room_id) #Helper
-    if access_token == 0:
-        return 0
+    spotify_id = api.get_spotify_id(access_token)
+    playlist_id = api.create_playlist(access_token, room_id, spotify_id)
+    
+    rooms.set_room(room_id, dict({
+        'refresh_token': refresh_token,
+        'access_token': access_token,
+        'expire_time': expire_time,
+        'playlist_id': playlist_id,
+        'is_playing': 0
+    }))
 
-    return user_id, playlist_id[0], access_token
+    return {
+        'roomId': room_id,
+        'userId': user_id,
+        'accessToken': access_token,
+        'playlistUri': playlist_id
+    }
 
-# Creating a new room.
-# Input:  Int - user ID of creator of new room.
-# Output: List - room ID, playlist ID of newly created room.
-def new_room(user_id):
+# Route: /leave_room.
+def leave_spotify_room(room_id, user_id):
+    users.delete_user(user_id)
 
-    # Get tokens
-    access_token = get_tokens("user", user_id) #Helper
-    if access_token == 0:
-        return 0
+    devices_set = rooms.get_spotify_devices(room_id)
+    if len(devices_set) == 0:
+        rooms.delete_room(room_id)
 
-    # Create a new room and add the creator to it
-    room_id = add_new_room() #DB
-    if room_id == 0:
-        print("Error creating room in database.")
-        return 0
-    add_creator_to_room(room_id, user_id)
-    add_user_to_room(room_id, user_id) #DB
+# Route: /join_room.
+def join_spotify_room(room_id):
 
-    # Get spotify user id and create playlist for room.
-    spotify_user_id = get_user_id(access_token) #API
-    playlist_id = create_playlist(access_token, spotify_user_id, room_id) #API
+    # Get room status and update access token.
+    room = rooms.get_room(room_id)
+    refresh_token = room['refreshToken']
+    access_token = room['accessToken'] 
+    expire_time = room['tokenExpireTime']
+    playlist_id = room['playlistId']
+    if (time.time() > float(expire_time)):
+        access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
-    #TODO: TEMP CODE TO ADD Needed Me - Rihanna TO PLAYLIST
-    add_track_to_playlist(access_token, 'spotify:track:0LtOwyZoSNZKJWHqjzADpW', playlist_id)
-    #
+    # Add user to room and return.
+    user_id = users.insert_user(room_id)
+    return {
+        'userId': user_id,
+        'accessToken': access_token,
+        'playlistUri': playlist_id
+    }
 
-    add_playlist_to_room(playlist_id, room_id) #DB
+# Route: /add_device.
+def add_spotify_device(room_id, user_id, device_id):
 
-    return room_id, playlist_id, access_token
+    # Get room status and update access token.
+    room = rooms.get_room(room_id)
+    refresh_token = room['refreshToken']
+    access_token = room['accessToken'] 
+    expire_time = room['tokenExpireTime']
+    is_playing = room['isPlaying']
+    if (time.time() > float(expire_time)):
+        access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
-# Average the room level emotion.
-# Input:  Int - room code/ID.
-# Output: String - dominant room emotion (or error message).
-def update_room(room_id):
+    # Add device to user.
+    users.set_device_id(user_id, device_id)
+    api.transfer(access_token, device_id, is_playing)
 
-    # Get average emotion (NOT 'neutral') from all emotionData for every user in the room.
-    users = get_user_emotion(room_id) #DB
-    if len(users) == 0:
-        return "Room is empty."
-        
-    emotions = {'anger': 0, 'contempt': 0, 'disgust': 0, 'fear': 0, 'happiness': 0, 'neutral':0, 'sadness': 0, 'surprise': 0}
-    for e in emotions:
-        emotions[e] = sum([i[e] for i in users]) / len(users)
+# Route: /play_room.
+def play_spotify_room(room_id):
 
-    # Update the dominant emotion in the room.
-    max_emotion = max(emotions, key=emotions.get)
-    update_room_emotion(max_emotion, room_id) #DB
+    # Get room status and update access token.
+    room = rooms.get_room(room_id)
+    refresh_token = room['refreshToken']
+    access_token = room['accessToken'] 
+    expire_time = room['tokenExpireTime']
+    playlist_id = room['playlistId']
+    is_playing = room['isPlaying']
+    if (time.time() > float(expire_time)):
+        access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
-    # Get tokens.
-    access_token = get_tokens("room", room_id) #Helper
-    if access_token == 0:
-        return "Error accessing Spotify."
-
-    # Call track_recommendations to get one track recommendation for the room, and add to playlist.
-    playlist_id = get_playlist_from_room(room_id)[0] #DB
-    curr_items = get_playlist_tracks(access_token, playlist_id) #API
-    curr_tracks = set([i['track']['id'] for i in curr_items if i['track'] is not None])
-
-    tracks = track_recommendations(access_token, emotions, max_emotion, 1, curr_tracks) #Helper
-    if tracks is None:
-        return "No tracks match input valence and energy."
-    new_track = tracks[0]['track']['uri']
-    add_track_to_playlist(access_token, new_track, playlist_id) #API
-
-    # Return the dominant emotion.
-    return max_emotion
-
-# Add the device ID to the database.
-def set_device(device_id, user_id):
-    set_user_spotify_device(device_id, user_id)
-    return ''
-
-## Handle synchronous play calls from FE.
-# Play...
-def play(id):
-
-    # Get tokens.
-    access_token = get_tokens("room", id) #Helper
-    if access_token == 0:
-        return None
-
-    # Get playlist URI
-    playlist_id = get_playlist_from_room(id)[0]
+    # Check context URI and position for accuracy.
     uri = f'spotify:playlist:{playlist_id}'
     position = 0
-
-    # Get playback
-    data = playback(id)
-    if data is not None and 'context' in data:
-        curr_uri = data['context']['uri']
-        if curr_uri == uri:
+    try:
+        playback_data = api.get_playback(access_token)
+        curr = playback_data['context']['uri']
+        if curr == uri:
             uri = None
             position = None
+    
+    # Start playing, if the room is currently paused.
+    finally:
+        device_ids = rooms.get_spotify_devices(room_id)
+        if is_playing == 0:
+            for i in device_ids:
+                if i is not None:
+                    api.play(access_token, i, uri, position)
+    return __room_player(room_id, playlist_id, refresh_token, access_token, expire_time)
 
-    # Call play from Spotify
-    devices = get_spotify_devices(room_id=id)
-    for d in set(devices):
-        if d is not None:
-            spotify_play(access_token, d, uri, position)
+# Route: /pause_room.
+def pause_spotify_room(room_id):
 
-    # Get album art
-    art = player_data(id)
-    return art
+    # Get room status and update access token.
+    room = rooms.get_room(room_id)
+    refresh_token = room['refreshToken']
+    access_token = room['accessToken'] 
+    expire_time = room['tokenExpireTime']
+    playlist_id = room['playlistId']
+    if (time.time() > float(expire_time)):
+        access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
-# Pause...
-def pause(id):
+    # Pause room playback.
+    device_ids = rooms.get_spotify_devices(room_id)
+    for i in device_ids:
+        if i is not None:
+            api.pause(access_token, i)
+    return __room_player(room_id, playlist_id, refresh_token, access_token, expire_time)
 
-    # Get tokens.
-    access_token = get_tokens("room", id) #Helper
-    if access_token == 0:
-        return None
+# Route: /skip_next.
+def spotify_skip_next(room_id):
 
-    devices = get_spotify_devices(room_id=id)
-    for d in set(devices):
-        if d is not None:
-            spotify_pause(access_token, d)
+    # Get room status and update access token.
+    room = rooms.get_room(room_id)
+    refresh_token = room['refreshToken']
+    access_token = room['accessToken'] 
+    expire_time = room['tokenExpireTime']
+    playlist_id = room['playlistId']
+    if (time.time() > float(expire_time)):
+        access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
-    # Get album art
-    art = player_data(id)
-    return art
+    # Skip to next track in room playlist.
+    device_ids = rooms.get_spotify_devices(room_id)
+    for i in device_ids:
+        if i is not None:
+            api.skip_next(access_token, i)
+    return __room_player(room_id, playlist_id, refresh_token, access_token, expire_time)
 
-# Next...
-def skip(id):
+# Route: /skip_previous.
+def spotify_skip_previous(room_id):
 
-    # Get tokens.
-    access_token = get_tokens("room", id) #Helper
-    if access_token == 0:
-        return None
+    # Get room status and update access token.
+    room = rooms.get_room(room_id)
+    refresh_token = room['refreshToken']
+    access_token = room['accessToken'] 
+    expire_time = room['tokenExpireTime']
+    playlist_id = room['playlistId']
+    if (time.time() > float(expire_time)):
+        access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
-    devices = get_spotify_devices(room_id=id)
-    for d in set(devices):
-        if d is not None:
-            spotify_next(access_token, d)
+    # Skip back to previous track in room playlist.
+    device_ids = rooms.get_spotify_devices(room_id)
+    for i in device_ids:
+        if i is not None:
+            api.skip_previous(access_token, i)
+    return __room_player(room_id, playlist_id, refresh_token, access_token, expire_time)
 
-    # Get album art
-    art = player_data(id)
-    return art
+## Private functions.
+# Update room emotion and playlist.
+def __room_update(access_token, room_id, playlist_id):
 
-# Previous
-def previous(id):
+    # Run update code if it exists with users.
+    user_emotions = rooms.get_users_emotions(room_id)
+    num_users = len(user_emotions)
+    if num_users > 0:
+        emotions = {'anger': 0, 'contempt': 0, 'disgust': 0, 'fear': 0, 'happiness': 0, 'neutral':0, 'sadness': 0, 'surprise': 0}
+        for e in emotions:
+            emotions[e] = sum([i[e] for i in user_emotions]) / num_users
+        emotion = max(emotions, key=emotions.get)
 
-    # Get tokens.
-    access_token = get_tokens("room", id) #Helper
-    if access_token == 0:
-        return None
+        # Metrics for finding a new track.
+        existing = api.get_playlist_tracks(access_token, playlist_id)
+        energy = __room_energy(emotions)
+        valence = __room_valence(emotions)
 
-    devices = get_spotify_devices(room_id=id)
-    for d in set(devices):
-        if d is not None:
-            spotify_previous(access_token, d)
+        # Find a new track id to add to playlist.
+        new_track_id = 0
+        playlist_ids = api.search_playlist(access_token, emotion)
+        for i in playlist_ids:
+            track_ids = api.get_playlist_tracks(access_token, i)
+            audio_features = api.get_audio_features(access_token, track_ids)
+            for j in audio_features:
+                check_duplicate = not (j['id'] in existing)
+                check_energy = (abs(j['energy'] - energy) < THRESHOLD)
+                check_valence = (abs(j['valence'] - valence) < THRESHOLD)
 
-    # Get album art
-    art = player_data(id)
-    return art
+                # If a fitting track is found, break out of all nested loops.
+                if check_duplicate and check_energy and check_valence:
+                    new_track_id = j['id']
+                    break
+            else:
+                continue
+            break
+
+        # Add new track to playlist.
+        api.add_track_to_playlist(access_token, playlist_id, new_track_id)
+
+# Get playback data for the room from the API, for database update and response to frontend.
+def __room_player(room_id, playlist_id, refresh_token, access_token, expire_time):
+    try:
+        playback_data = api.get_playback(access_token)
+        is_playing = playback_data['is_playing']
+        song = playback_data['item']['name']
+        artist = playback_data['item']['artists'][0]['name']
+        album_art = playback_data['item']['album']['images'][0]['url']
+    except:
+        is_playing = 0
+        song = None
+        artist = None
+        album_art = None
+    rooms.set_room(room_id, dict({
+        'refresh_token': refresh_token,
+        'access_token': access_token,
+        'expire_time': expire_time,
+        'playlist_id': playlist_id,
+        'is_playing': is_playing
+    }))
+    return {
+        'song': song,
+        'artist': artist,
+        'albumArt': album_art
+    }
+
+# Calculate target energy for the room.
+def __room_energy(emotions):
+    A = emotions['anger']
+    C = emotions['contempt']
+    D = emotions['disgust']
+    F = emotions['fear']
+    H = emotions['happiness']
+    # N = emotions['neutral']
+    # SA = emotions['sadness']
+    SU = emotions['surprise']
+    energy = (5*SU + 4*A + 3*F + 2*C + 2*D + H) / 5
+    return energy
+
+# Calculate target valence for the room.
+def __room_valence(emotions):
+    A = emotions['anger']
+    C = emotions['contempt']
+    D = emotions['disgust']
+    F = emotions['fear']
+    H = emotions['happiness']
+    # N = emotions['neutral']
+    SA = emotions['sadness']
+    SU = emotions['surprise']
+    valence = ((H+SU) - (A+C+D+F+SA) + 1) / 2
+    return valence
