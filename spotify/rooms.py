@@ -3,13 +3,20 @@
 import json
 import sqlite3
 from sqlite3 import Error
+import pymssql
+
+driver= '{ODBC Driver 17 for SQL Server}'
+server = 'cvdj.database.windows.net'
+database = 'cvdj'
+username = 'cvdjadmin'
+password = 'elec498!' 
 
 # Insert room.
 def insert_room():
     room_id = 0
 
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ INSERT INTO rooms (accessToken)
                     VALUES (?); """
@@ -30,7 +37,7 @@ def insert_room():
 # Delete room.
 def delete_room(room_id):
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ DELETE FROM rooms
                     WHERE roomId = ?; """
@@ -49,7 +56,7 @@ def delete_room(room_id):
 # Update room from a dict.
 def set_room(room_id, room):
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ UPDATE rooms
                     SET accessToken = ?,
@@ -75,7 +82,7 @@ def get_room(room_id):
     room = dict()
 
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         conn.row_factory = __dict_factory
         cursor = conn.cursor()
         query = """ SELECT *
@@ -105,7 +112,7 @@ def __dict_factory(cursor, row):
 def get_users_emotions(room_id):
     emotions = list()
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ SELECT emotionData FROM users
                     WHERE roomId = ?; """
@@ -127,7 +134,7 @@ def get_users_emotions(room_id):
 def get_spotify_devices(room_id):
     device_ids = list()
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ SELECT spotifyDevice FROM users
                     WHERE roomId = ?; """

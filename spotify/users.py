@@ -3,6 +3,14 @@
 import json
 import sqlite3
 from sqlite3 import Error
+import pymssql
+
+driver= '{ODBC Driver 17 for SQL Server}'
+server = 'cvdj.database.windows.net'
+database = 'cvdj'
+username = 'cvdjadmin@cvdj'
+password = 'elec498!' 
+# conn = pymssql.connect(server, username, password, database)
 
 DEFAULT_EMOTION_JSON = json.dumps({
         "anger": 0.0,
@@ -19,7 +27,7 @@ DEFAULT_EMOTION_JSON = json.dumps({
 def insert_user(room_id):
     user_id = 0
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ INSERT INTO users (roomId, emotionData)
                     VALUES (?, ?); """
@@ -40,7 +48,7 @@ def insert_user(room_id):
 # Delete user.
 def delete_user(user_id):
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ DELETE FROM users
                     WHERE userId = ?; """
@@ -79,7 +87,7 @@ def set_emotion_data(user_id, emotion_data):
 # Update spotify device.
 def set_device_id(user_id, spotify_device):
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ UPDATE users
                     SET spotifyDevice = ?
