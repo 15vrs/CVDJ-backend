@@ -1,10 +1,10 @@
 import json
 from io import BytesIO
-import spotify.users as users
-
 import requests
+
 from azure.cognitiveservices.vision.face import FaceClient
 from msrest.authentication import CognitiveServicesCredentials
+import database.users as users
 
 # Azure properties
 SUBSCRIPTION_KEY = 'a7f97fe3646d49dea6a12ede3c1c7804'

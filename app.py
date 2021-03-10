@@ -1,6 +1,6 @@
 from flask import Flask, request
-from azure_cognitive import emotion, emotion_with_stream
-import spotify.spotify as spotify
+from services.azure_cognitive import emotion, emotion_with_stream
+import services.spotify as spotify
 
 app = Flask(__name__)
 

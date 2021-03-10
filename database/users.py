@@ -1,9 +1,8 @@
 # Access "users" table in "cvdj.db", to store user level data.
 
 import json
-import sqlite3
-from sqlite3 import Error
 import pymssql
+from pymssql import Error
 
 driver= '{ODBC Driver 17 for SQL Server}'
 server = 'cvdj.database.windows.net'
@@ -30,7 +29,7 @@ def insert_user(room_id):
         conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ INSERT INTO users (roomId, emotionData)
-                    VALUES (?, ?); """
+                    VALUES (%d, %s); """
         params = (room_id, DEFAULT_EMOTION_JSON)
 
         cursor.execute(query, params)
@@ -51,7 +50,7 @@ def delete_user(user_id):
         conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ DELETE FROM users
-                    WHERE userId = ?; """
+                    WHERE userId = %d; """
         params = (user_id, )
 
         cursor.execute(query, params)
@@ -67,11 +66,11 @@ def delete_user(user_id):
 # Update emotion data.
 def set_emotion_data(user_id, emotion_data):
     try:
-        conn = sqlite3.connect('cvdj.db')
+        conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ UPDATE users
-                    SET emotionData = ?
-                    WHERE userId = ?; """
+                    SET emotionData = %s
+                    WHERE userId = %d; """
         params = (emotion_data, user_id)
 
         cursor.execute(query, params)
@@ -90,8 +89,8 @@ def set_device_id(user_id, spotify_device):
         conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ UPDATE users
-                    SET spotifyDevice = ?
-                    WHERE userId = ?; """
+                    SET spotifyDevice = %s
+                    WHERE userId = %d; """
         params = (spotify_device, user_id)
 
         cursor.execute(query, params)

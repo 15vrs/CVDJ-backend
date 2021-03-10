@@ -1,7 +1,7 @@
 import time
-import spotify.users as users
-import spotify.rooms as rooms
-import spotify.spotify_api as api
+import database.users as users
+import database.rooms as rooms
+import services.spotify_api as api
 
 THRESHOLD = 0.09
 
@@ -53,9 +53,9 @@ def join_spotify_room(room_id):
     # Add user to room and return.
     user_id = users.insert_user(room_id)
     return {
-        'userId': user_id,
-        'accessToken': access_token,
-        'playlistUri': playlist_id
+        'userId': int(user_id),
+        'accessToken': str(access_token),
+        'playlistUri': str(playlist_id)
     }
 
 # Route: /add_device.
@@ -224,9 +224,9 @@ def __room_player(room_id, playlist_id, refresh_token, access_token, expire_time
         'is_playing': is_playing
     }))
     return {
-        'song': song,
-        'artist': artist,
-        'albumArt': album_art
+        'song': str(song),
+        'artist': str(artist),
+        'albumArt': str(album_art)
     }
 
 # Calculate target energy for the room.

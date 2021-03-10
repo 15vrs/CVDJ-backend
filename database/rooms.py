@@ -1,9 +1,8 @@
 # Access "rooms" table in "cvdj.db", to store room level data.
 
 import json
-import sqlite3
-from sqlite3 import Error
 import pymssql
+from pymssql import Error
 
 driver= '{ODBC Driver 17 for SQL Server}'
 server = 'cvdj.database.windows.net'
@@ -19,7 +18,7 @@ def insert_room():
         conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ INSERT INTO rooms (accessToken)
-                    VALUES (?); """
+                    VALUES (%s); """
         params = (None, )
 
         cursor.execute(query, params)
@@ -40,7 +39,7 @@ def delete_room(room_id):
         conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ DELETE FROM rooms
-                    WHERE roomId = ?; """
+                    WHERE roomId = %d; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -59,12 +58,12 @@ def set_room(room_id, room):
         conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ UPDATE rooms
-                    SET accessToken = ?,
-                        refreshToken = ?,
-                        tokenExpireTime = ?,
-                        playlistId = ?,
-                        isPlaying = ?
-                    WHERE roomId = ?; """
+                    SET accessToken = %s,
+                        refreshToken = %s,
+                        tokenExpireTime = %s,
+                        playlistId = %s,
+                        isPlaying = %d
+                    WHERE roomId = %d; """
         params = (room['access_token'], room['refresh_token'], room['expire_time'], room['playlist_id'], room['is_playing'], room_id)
 
         cursor.execute(query, params)
@@ -83,11 +82,10 @@ def get_room(room_id):
 
     try:
         conn = pymssql.connect(server, username, password, database)
-        conn.row_factory = __dict_factory
-        cursor = conn.cursor()
+        cursor = conn.cursor(as_dict=True)
         query = """ SELECT *
                     FROM rooms
-                    WHERE roomId = ?; """
+                    WHERE roomId = %s; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -115,7 +113,7 @@ def get_users_emotions(room_id):
         conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ SELECT emotionData FROM users
-                    WHERE roomId = ?; """
+                    WHERE roomId = %d; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -137,7 +135,7 @@ def get_spotify_devices(room_id):
         conn = pymssql.connect(server, username, password, database)
         cursor = conn.cursor()
         query = """ SELECT spotifyDevice FROM users
-                    WHERE roomId = ?; """
+                    WHERE roomId = %d; """
         params = (room_id, )
 
         cursor.execute(query, params)
