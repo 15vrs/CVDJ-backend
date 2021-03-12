@@ -40,9 +40,11 @@ def join_room(room_code):
     return rsp
 
 # Removing a user from an existing CVDJ room.
-@app.route('/leave_room/<room_code>/<user_id>', methods=['GET'])
-def leave_room(room_code, user_id):
-    spotify.leave_spotify_room(room_code, user_id)
+@app.route('/leave_room', methods=['POST'])
+def leave_room():
+    user_id = request.json['userId']
+    room_id = request.json['roomId']
+    spotify.leave_spotify_room(room_id, user_id)
     return ''
 
 # Add the web browser device to the users database.
