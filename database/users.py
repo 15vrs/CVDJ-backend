@@ -30,7 +30,7 @@ def insert_user(room_id):
     cursor = conn.cursor()
     try:
         query = """ INSERT INTO users (roomId, emotionData)
-                    VALUES (%d, %s); """
+                    VALUES (%s, %s); """
         params = (room_id, DEFAULT_EMOTION_JSON)
 
         cursor.execute(query, params)
@@ -51,7 +51,7 @@ def delete_user(user_id):
     cursor = conn.cursor()
     try:
         query = """ DELETE FROM users
-                    WHERE userId = %d; """
+                    WHERE userId = %s; """
         params = (user_id, )
 
         cursor.execute(query, params)
@@ -71,7 +71,7 @@ def set_emotion_data(user_id, emotion_data):
     try:
         query = """ UPDATE users
                     SET emotionData = %s
-                    WHERE userId = %d; """
+                    WHERE userId = %s; """
         params = (emotion_data, user_id)
 
         cursor.execute(query, params)
@@ -91,7 +91,7 @@ def set_device_id(user_id, spotify_device):
     try:
         query = """ UPDATE users
                     SET spotifyDevice = %s
-                    WHERE userId = %d; """
+                    WHERE userId = %s; """
         params = (spotify_device, user_id)
 
         cursor.execute(query, params)

@@ -39,7 +39,7 @@ def delete_room(room_id):
     cursor = conn.cursor()
     try:
         query = """ DELETE FROM rooms
-                    WHERE roomId = %d; """
+                    WHERE roomId = %s; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -62,8 +62,8 @@ def set_room(room_id, room):
                         refreshToken = %s,
                         tokenExpireTime = %s,
                         playlistId = %s,
-                        isPlaying = %d
-                    WHERE roomId = %d; """
+                        isPlaying = %s
+                    WHERE roomId = %s; """
         params = (room['access_token'], room['refresh_token'], room['expire_time'], room['playlist_id'], room['is_playing'], room_id)
 
         cursor.execute(query, params)
@@ -81,7 +81,7 @@ def get_room(room_id):
     room = dict()
 
     conn = pymssql.connect(server, username, password, database)
-    cursor = conn.cursor()
+    cursor = conn.cursor(as_dict=True)
     try:
         query = """ SELECT *
                     FROM rooms
@@ -89,7 +89,7 @@ def get_room(room_id):
         params = (room_id, )
 
         cursor.execute(query, params)
-        room = dict(cursor.fetchone())
+        room = cursor.fetchone()
     
     except Error as e:
         print(e)
@@ -107,7 +107,7 @@ def get_users_emotions(room_id):
     cursor = conn.cursor()
     try:
         query = """ SELECT emotionData FROM users
-                    WHERE roomId = %d; """
+                    WHERE roomId = %s; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -130,7 +130,7 @@ def get_spotify_devices(room_id):
     cursor = conn.cursor()
     try:
         query = """ SELECT spotifyDevice FROM users
-                    WHERE roomId = %d; """
+                    WHERE roomId = %s; """
         params = (room_id, )
 
         cursor.execute(query, params)

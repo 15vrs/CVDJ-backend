@@ -15,19 +15,19 @@ def create_spotify_room(code, redirect_uri):
     spotify_id = api.get_spotify_id(access_token)
     playlist_id = api.create_playlist(access_token, room_id, spotify_id)
     
-    rooms.set_room(room_id, dict({
+    rooms.set_room(room_id, {
         'refresh_token': refresh_token,
         'access_token': access_token,
-        'expire_time': expire_time,
+        'expire_time': str(expire_time),
         'playlist_id': playlist_id,
         'is_playing': 0
-    }))
+    })
 
     return {
-        'roomId': room_id,
-        'userId': user_id,
-        'accessToken': access_token,
-        'playlistUri': playlist_id
+        'roomId': int(room_id),
+        'userId': int(user_id),
+        'accessToken': str(access_token),
+        'playlistUri': str(playlist_id)
     }
 
 # Route: /leave_room.
@@ -219,7 +219,7 @@ def __room_player(room_id, playlist_id, refresh_token, access_token, expire_time
     rooms.set_room(room_id, dict({
         'refresh_token': refresh_token,
         'access_token': access_token,
-        'expire_time': expire_time,
+        'expire_time': str(expire_time),
         'playlist_id': playlist_id,
         'is_playing': is_playing
     }))
