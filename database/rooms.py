@@ -14,9 +14,9 @@ password = 'elec498!'
 def insert_room():
     room_id = 0
 
+    conn = pymssql.connect(server, username, password, database)
+    cursor = conn.cursor()
     try:
-        conn = pymssql.connect(server, username, password, database)
-        cursor = conn.cursor()
         query = """ INSERT INTO rooms (accessToken)
                     VALUES (%s); """
         params = (None, )
@@ -35,9 +35,9 @@ def insert_room():
 
 # Delete room.
 def delete_room(room_id):
+    conn = pymssql.connect(server, username, password, database)
+    cursor = conn.cursor()
     try:
-        conn = pymssql.connect(server, username, password, database)
-        cursor = conn.cursor()
         query = """ DELETE FROM rooms
                     WHERE roomId = %d; """
         params = (room_id, )
@@ -54,9 +54,9 @@ def delete_room(room_id):
 
 # Update room from a dict.
 def set_room(room_id, room):
+    conn = pymssql.connect(server, username, password, database)
+    cursor = conn.cursor()
     try:
-        conn = pymssql.connect(server, username, password, database)
-        cursor = conn.cursor()
         query = """ UPDATE rooms
                     SET accessToken = %s,
                         refreshToken = %s,
@@ -80,9 +80,9 @@ def set_room(room_id, room):
 def get_room(room_id):
     room = dict()
 
+    conn = pymssql.connect(server, username, password, database)
+    cursor = conn.cursor()
     try:
-        conn = pymssql.connect(server, username, password, database)
-        cursor = conn.cursor(as_dict=True)
         query = """ SELECT *
                     FROM rooms
                     WHERE roomId = %s; """
@@ -99,19 +99,13 @@ def get_room(room_id):
         conn.close()
         return room
 
-# Private function for row factory.
-def __dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
-
 # Select users emotions list.
 def get_users_emotions(room_id):
     emotions = list()
+
+    conn = pymssql.connect(server, username, password, database)
+    cursor = conn.cursor()
     try:
-        conn = pymssql.connect(server, username, password, database)
-        cursor = conn.cursor()
         query = """ SELECT emotionData FROM users
                     WHERE roomId = %d; """
         params = (room_id, )
@@ -131,9 +125,10 @@ def get_users_emotions(room_id):
 # Select users device IDs.
 def get_spotify_devices(room_id):
     device_ids = list()
+
+    conn = pymssql.connect(server, username, password, database)
+    cursor = conn.cursor()
     try:
-        conn = pymssql.connect(server, username, password, database)
-        cursor = conn.cursor()
         query = """ SELECT spotifyDevice FROM users
                     WHERE roomId = %d; """
         params = (room_id, )

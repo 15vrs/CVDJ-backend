@@ -7,9 +7,9 @@ database = 'cvdj'
 username = 'cvdjadmin'
 password = 'elec498!' 
 
+conn = pymssql.connect(server, username, password, database)
+cursor = conn.cursor()
 try:
-    conn = pymssql.connect(server, username, password, database)
-    cursor = conn.cursor()
     cursor.execute("""  DELETE FROM rooms;
                         DELETE FROM users;
 
