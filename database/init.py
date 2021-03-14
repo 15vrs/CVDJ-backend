@@ -1,7 +1,6 @@
 import pymssql
 from pymssql import Error
 
-driver= '{ODBC Driver 17 for SQL Server}'
 server = 'cvdj.database.windows.net'
 database = 'cvdj'
 username = 'cvdjadmin'
@@ -32,6 +31,7 @@ try:
     conn.commit()
 
 except Error as e:
+    conn.rollback()
     print(e)
 
 finally:

@@ -16,15 +16,15 @@ def create_spotify_room(code, redirect_uri):
     playlist_id = api.create_playlist(access_token, room_id, spotify_id)
     
     rooms.set_room(room_id, {
-        'refresh_token': refresh_token,
-        'access_token': access_token,
-        'expire_time': str(expire_time),
-        'playlist_id': playlist_id,
-        'is_playing': 0
+        'accessToken': access_token,
+        'refreshToken': refresh_token,
+        'tokenExpireTime': str(expire_time),
+        'playlistId': playlist_id,
+        'isPlaying': 0
     })
 
     return {
-        'roomId': int(room_id),
+        'roomId': room_id,
         'userId': int(user_id),
         'accessToken': str(access_token),
         'playlistUri': str(playlist_id)
@@ -217,11 +217,11 @@ def __room_player(room_id, playlist_id, refresh_token, access_token, expire_time
         artist = None
         album_art = None
     rooms.set_room(room_id, dict({
-        'refresh_token': refresh_token,
-        'access_token': access_token,
-        'expire_time': str(expire_time),
-        'playlist_id': playlist_id,
-        'is_playing': is_playing
+        'accessToken': access_token,
+        'refreshToken': refresh_token,
+        'tokenExpireTime': str(expire_time),
+        'playlistId': playlist_id,
+        'isPlaying': is_playing
     }))
     return {
         'song': str(song),
