@@ -15,12 +15,11 @@ password = 'elec498!'
 ROOM_ID = None
 ACCESS_TOKEN = 'BQDi23QDxX5MFHjvy7PV2pz7dlqFCcsISfvvh-Tprdt1KAd4UfCBo0O9faJH9ZIJlgtvGEKWp4j_JDgnQq5iNFq-qE3fg3rhPRQZekWil2KyWdXWhTh8ukZzbpNkLMZIIxIUmO7_sbiWDragFnIDRbbwfNKCfcPtXnXagJc_i7kOFmef8usndjaDSpcIN37a6tfKnl9hZ-wES0yymdNQP0FVBnDrRKq3M_81MVdJrwzEwwCwN0Zz4m072sXC'
 REFRESH_TOKEN = 'AQC-gL7DnvESak5L8yTZ8UJM1Tq95Bwh_jifKb-8uakbPtmm0hZKUrxmBZIiWrjzcJ16qMlMLlxSUSH-EKrLT-tCEqkCLq0Az0qs6hkp5HtRxZ6gJCKGts_TIcbUbvWTENQ'
-EXPIRE_TIME = '1615301838'
+EXPIRE_TIME = 1615301838
 PLAYLIST_ID = '6rzDJ7iqTwKjVsqHf7oxTy'
 
 # User test variables.
 USER_ID = None
-ROOM_ID = 0
 EMOTION_DATA = json.dumps({
         "anger": 0.0,
         "contempt": 0.0,

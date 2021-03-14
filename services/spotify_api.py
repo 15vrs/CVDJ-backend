@@ -30,7 +30,7 @@ def get_access_tokens(code, redirect_uri):
         res = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload).json()
         refresh_token = res['refresh_token']
         access_token = res['access_token']
-        expire_time = math.floor(time.time() + float(res['expires_in']))
+        expire_time = int(math.floor(time.time() + float(res['expires_in'])))
     finally:
         return refresh_token, access_token, expire_time
 
@@ -47,7 +47,7 @@ def refresh_access_tokens(refresh_token):
     try:
         res = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload).json()
         access_token = res['access_token']
-        expire_time = math.floor(time.time() + float(res['expires_in']))
+        expire_time = int(math.floor(time.time() + float(res['expires_in'])))
     finally:
         return access_token, expire_time
 

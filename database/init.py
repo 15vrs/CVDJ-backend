@@ -16,7 +16,7 @@ try:
                             roomId INTEGER NOT NULL IDENTITY PRIMARY KEY,
                             accessToken TEXT,
                             refreshToken TEXT,
-                            tokenExpireTime TEXT,
+                            tokenExpireTime INTEGER,
                             playlistId TEXT,
                             isPlaying INTEGER NOT NULL DEFAULT(0)
                         );
