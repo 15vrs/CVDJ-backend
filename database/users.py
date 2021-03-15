@@ -49,7 +49,7 @@ def set_emotion_data(user_id, emotion_data):
         query = """ UPDATE users
                     SET emotionData = %s
                     WHERE userId = %s; """
-        params = (emotion_data, user_id)
+        params = (json.dumps(emotion_data), user_id)
 
         cursor.execute(query, params)
         conn.commit()

@@ -7,7 +7,7 @@ THRESHOLD = 0.09
 
 # Route: /create_room.
 def create_spotify_room(code, redirect_uri):
-    refresh_token, access_token, expire_time = api.get_access_tokens(code, redirect_uri)
+    access_token, refresh_token, expire_time = api.get_access_tokens(code, redirect_uri)
 
     room_id = rooms.insert_room()
     user_id = users.insert_user(room_id)
@@ -163,7 +163,7 @@ def spotify_skip_previous(room_id):
             api.skip_previous(access_token, i)
     return __room_player(room_id, playlist_id, refresh_token, access_token, expire_time)
 
-## Private functions.
+## Private helper functions.
 # Update room emotion and playlist.
 def __room_update(access_token, room_id, playlist_id):
 
@@ -224,9 +224,9 @@ def __room_player(room_id, playlist_id, refresh_token, access_token, expire_time
         'isPlaying': is_playing
     }))
     return {
-        'song': str(song),
-        'artist': str(artist),
-        'albumArt': str(album_art)
+        'song': song,
+        'artist': artist,
+        'albumArt': album_art
     }
 
 # Calculate target energy for the room.

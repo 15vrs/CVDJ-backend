@@ -13,7 +13,7 @@ def after_request(response):
   return response
 
 # Call to Face API with image to get emotion data.
-@app.route("/emotion/<user_id>", methods=['POST'])
+@app.route('/emotion/<user_id>', methods=['POST'])
 def determine_emotion(user_id):
     if (request.data):
         return emotion_with_stream(user_id, request.data)

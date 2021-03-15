@@ -1,38 +1,15 @@
 import json
 import pymssql
-from pymssql import Error
 import database.rooms as rooms
 import database.users as users
+from tests.test_variables import ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, USER_ID, EMOTION_DATA, DEVICE_ID
 
-## Global variables ##
 # Database connection values.
 server = 'cvdj.database.windows.net'
 database = 'cvdj'
 username = 'cvdjadmin'
 password = 'elec498!' 
 
-# Room test variables.
-ROOM_ID = None
-ACCESS_TOKEN = 'BQDi23QDxX5MFHjvy7PV2pz7dlqFCcsISfvvh-Tprdt1KAd4UfCBo0O9faJH9ZIJlgtvGEKWp4j_JDgnQq5iNFq-qE3fg3rhPRQZekWil2KyWdXWhTh8ukZzbpNkLMZIIxIUmO7_sbiWDragFnIDRbbwfNKCfcPtXnXagJc_i7kOFmef8usndjaDSpcIN37a6tfKnl9hZ-wES0yymdNQP0FVBnDrRKq3M_81MVdJrwzEwwCwN0Zz4m072sXC'
-REFRESH_TOKEN = 'AQC-gL7DnvESak5L8yTZ8UJM1Tq95Bwh_jifKb-8uakbPtmm0hZKUrxmBZIiWrjzcJ16qMlMLlxSUSH-EKrLT-tCEqkCLq0Az0qs6hkp5HtRxZ6gJCKGts_TIcbUbvWTENQ'
-EXPIRE_TIME = 1615301838
-PLAYLIST_ID = '6rzDJ7iqTwKjVsqHf7oxTy'
-
-# User test variables.
-USER_ID = None
-EMOTION_DATA = json.dumps({
-        "anger": 0.0,
-        "contempt": 0.0,
-        "disgust": 0.0,
-        "fear": 0.0,
-        "happiness": 0.0,
-        "neutral": 1.0,
-        "sadness": 0.0,
-        "surprise": 0.0
-    })
-DEVICE_ID = '129279d8344a91e94463269df2bd8451135768e5'
-
-## Tests ##
 # Check insert room response from rooms.
 def test_insert_room():
     global ROOM_ID
@@ -101,7 +78,7 @@ def test_insert_user():
     expected = {
         'userId': USER_ID,
         'roomId': ROOM_ID,
-        'emotionData': EMOTION_DATA,
+        'emotionData': json.dumps(EMOTION_DATA),
         'spotifyDevice': None
     }
     __check_users([expected], 1)
@@ -116,7 +93,7 @@ def test_set_emotion_data():
     expected = {
         'userId': USER_ID,
         'roomId': ROOM_ID,
-        'emotionData': EMOTION_DATA,
+        'emotionData': json.dumps(EMOTION_DATA),
         'spotifyDevice': None
     }
     __check_users([expected], 1)
@@ -131,7 +108,7 @@ def test_set_device_id():
     expected = {
         'userId': USER_ID,
         'roomId': ROOM_ID,
-        'emotionData': EMOTION_DATA,
+        'emotionData': json.dumps(EMOTION_DATA),
         'spotifyDevice': DEVICE_ID
     }
     __check_users([expected], 1)
@@ -145,10 +122,10 @@ def test_get_users_emotions():
     assert type(rsp) == list
     assert len(rsp) == 1
 
-    expected = [json.loads(EMOTION_DATA)]
+    expected = [EMOTION_DATA]
     assert rsp == expected
 
-# Test get spotify devices response from rooms.
+# Test get spotify devices response from rooms (not empty).
 def test_get_spotify_devices():
     global USER_ID, ROOM_ID, DEVICE_ID
 
@@ -168,6 +145,18 @@ def test_delete_user():
 
     # Check database contents.
     __check_users([], 0)
+
+# Test get spotify devices response from rooms (empty).
+def test_get_spotify_devices():
+    global USER_ID, ROOM_ID, DEVICE_ID
+
+    rsp = rooms.get_spotify_devices(ROOM_ID)
+    assert rsp is not None
+    assert type(rsp) == list
+    assert len(rsp) == 0
+
+    expected = []
+    assert rsp == expected
 
 # Test delete room from rooms.
 def test_delete_room():

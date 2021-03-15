@@ -1,50 +1,21 @@
-import json
 import services.spotify as spotify
+from tests.test_variables import ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, USER_ID, DEVICE_ID, SPOTIFY_ID, CODE, REDIRECT_URI, PLAYBACK_DATA, SONG, ARTIST, ALBUM_ART
 
-## Global variables ##
-# Room test variables.
-ROOM_ID = 1
-ACCESS_TOKEN = 'BQDi23QDxX5MFHjvy7PV2pz7dlqFCcsISfvvh-Tprdt1KAd4UfCBo0O9faJH9ZIJlgtvGEKWp4j_JDgnQq5iNFq-qE3fg3rhPRQZekWil2KyWdXWhTh8ukZzbpNkLMZIIxIUmO7_sbiWDragFnIDRbbwfNKCfcPtXnXagJc_i7kOFmef8usndjaDSpcIN37a6tfKnl9hZ-wES0yymdNQP0FVBnDrRKq3M_81MVdJrwzEwwCwN0Zz4m072sXC'
-REFRESH_TOKEN = 'AQC-gL7DnvESak5L8yTZ8UJM1Tq95Bwh_jifKb-8uakbPtmm0hZKUrxmBZIiWrjzcJ16qMlMLlxSUSH-EKrLT-tCEqkCLq0Az0qs6hkp5HtRxZ6gJCKGts_TIcbUbvWTENQ'
-EXPIRE_TIME = 1615301838
-PLAYLIST_ID = '6rzDJ7iqTwKjVsqHf7oxTy'
-
-# User test variables.
-USER_ID = 1
-EMOTION_DATA = json.dumps({
-        "anger": 0.0,
-        "contempt": 0.0,
-        "disgust": 0.0,
-        "fear": 0.0,
-        "happiness": 0.0,
-        "neutral": 1.0,
-        "sadness": 0.0,
-        "surprise": 0.0
-    })
-DEVICE_ID = '129279d8344a91e94463269df2bd8451135768e5'
-
-# Spotify API test variables.
-SPOTIFY_ID = 'xxaabpbc03uwqhxuzrcadqhey'
-CODE = 'test_code_value'
-REDIRECT_URI = 'test_redirect_uri'
-
-## Tests ##
-# Not tested - leave_spotify_room, add_device
 # Check create room response from spotify.
 def test_create_spotify_room(mocker):
     global ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, USER_ID, SPOTIFY_ID, CODE, REDIRECT_URI
 
-    mocker.patch('services.spotify_api.get_access_tokens', return_value=(REFRESH_TOKEN, ACCESS_TOKEN, EXPIRE_TIME))
+    mocker.patch('services.spotify_api.get_access_tokens', return_value=(ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME))
     mocker.patch('database.rooms.insert_room', return_value=ROOM_ID)
     mocker.patch('database.users.insert_user', return_value=USER_ID)
     mocker.patch('services.spotify_api.get_spotify_id', return_value=SPOTIFY_ID)
     mocker.patch('services.spotify_api.create_playlist', return_value=PLAYLIST_ID)
     mocker.patch('database.rooms.set_room')
 
+    # Test1: success case.
     rsp = spotify.create_spotify_room(CODE, REDIRECT_URI)
     assert rsp is not None
     assert type(rsp) == dict
-
     expected = {
         'roomId': ROOM_ID,
         'userId': USER_ID,
@@ -52,6 +23,22 @@ def test_create_spotify_room(mocker):
         'playlistUri': PLAYLIST_ID
     }
     assert rsp == expected
+
+# Check leave room in spotify.
+def test_leave_spotify_room(mocker):
+    global ROOM_ID, USER_ID, DEVICE_ID
+
+    # Test1: success case.
+    mocker.patch('database.users.delete_user')
+    mocker.patch('database.rooms.get_spotify_devices', return_value=[DEVICE_ID])
+    rsp = spotify.leave_spotify_room(ROOM_ID, USER_ID)
+    assert rsp is None
+
+    # Test2: success case.
+    mocker.patch('database.rooms.get_spotify_devices', return_value=[])
+    mocker.patch('database.rooms.delete_room')
+    rsp = spotify.leave_spotify_room(ROOM_ID, USER_ID)
+    assert rsp is None
 
 # Check join room response from spotify.
 def test_join_spotify_room(mocker):
@@ -68,13 +55,151 @@ def test_join_spotify_room(mocker):
     mocker.patch('time.time', return_value=EXPIRE_TIME)
     mocker.patch('database.users.insert_user', return_value=USER_ID)
 
+    # Test1: success case.
     rsp = spotify.join_spotify_room(ROOM_ID)
     assert rsp is not None
     assert type(rsp) == dict
-
     expected = {
         'userId': USER_ID,
         'accessToken': ACCESS_TOKEN,
         'playlistUri': PLAYLIST_ID
+    }
+    assert rsp == expected
+
+# Check add device in spotify.
+def test_add_spotify_device(mocker):
+    global ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, USER_ID, DEVICE_ID
+
+    mocker.patch('database.rooms.get_room', return_value={
+        'roomId': ROOM_ID,
+        'accessToken': ACCESS_TOKEN,
+        'refreshToken': REFRESH_TOKEN,
+        'tokenExpireTime': EXPIRE_TIME,
+        'playlistId': PLAYLIST_ID,
+        'isPlaying': 0
+    })
+    mocker.patch('database.users.set_device_id')
+    mocker.patch('services.spotify_api.transfer')
+    
+    # Test1: success case.
+    rsp = spotify.add_spotify_device(ROOM_ID, USER_ID, DEVICE_ID)
+    assert rsp is None
+
+# Check play room response from spotify.
+def test_play_spotify_room(mocker):
+    global ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, DEVICE_ID, PLAYBACK_DATA, SONG, ARTIST, ALBUM_ART
+
+    mocker.patch('database.rooms.get_room', return_value={
+        'roomId': ROOM_ID,
+        'accessToken': ACCESS_TOKEN,
+        'refreshToken': REFRESH_TOKEN,
+        'tokenExpireTime': EXPIRE_TIME,
+        'playlistId': PLAYLIST_ID,
+        'isPlaying': 0
+    })
+    mocker.patch('time.time', return_value=EXPIRE_TIME)
+    mocker.patch('database.rooms.get_spotify_devices', return_value=[DEVICE_ID])
+    mocker.patch('services.spotify_api.play')
+    mocker.patch('services.spotify_api.get_playback', return_value=PLAYBACK_DATA)
+    mocker.patch('database.rooms.set_room')
+
+    # Test1: success case.
+    rsp = spotify.play_spotify_room(ROOM_ID)
+    assert rsp is not None
+    assert type(rsp) == dict
+    expected = {
+        'song': SONG,
+        'artist': ARTIST,
+        'albumArt': ALBUM_ART
+    }
+    assert rsp == expected
+
+# Check pause room response from spotify.
+def test_pause_spotify_room(mocker):
+    global ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, DEVICE_ID, PLAYBACK_DATA, SONG, ARTIST, ALBUM_ART
+
+    mocker.patch('database.rooms.get_room', return_value={
+        'roomId': ROOM_ID,
+        'accessToken': ACCESS_TOKEN,
+        'refreshToken': REFRESH_TOKEN,
+        'tokenExpireTime': EXPIRE_TIME,
+        'playlistId': PLAYLIST_ID,
+        'isPlaying': 0
+    })
+    mocker.patch('time.time', return_value=EXPIRE_TIME)
+    mocker.patch('services.spotify_api.get_playback', return_value=PLAYBACK_DATA)
+    mocker.patch('database.rooms.get_spotify_devices', return_value=[DEVICE_ID])
+    mocker.patch('services.spotify_api.pause')
+    mocker.patch('services.spotify_api.get_playback', return_value=PLAYBACK_DATA)
+    mocker.patch('database.rooms.set_room')
+
+    # Test1: success case.
+    rsp = spotify.pause_spotify_room(ROOM_ID)
+    assert rsp is not None
+    assert type(rsp) == dict
+    expected = {
+        'song': SONG,
+        'artist': ARTIST,
+        'albumArt': ALBUM_ART
+    }
+    assert rsp == expected
+
+# Check skip to next track response from spotify.
+def test_spotify_skip_next(mocker):
+    global ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, DEVICE_ID, PLAYBACK_DATA, SONG, ARTIST, ALBUM_ART
+
+    mocker.patch('database.rooms.get_room', return_value={
+        'roomId': ROOM_ID,
+        'accessToken': ACCESS_TOKEN,
+        'refreshToken': REFRESH_TOKEN,
+        'tokenExpireTime': EXPIRE_TIME,
+        'playlistId': PLAYLIST_ID,
+        'isPlaying': 0
+    })
+    mocker.patch('time.time', return_value=EXPIRE_TIME)
+    mocker.patch('services.spotify_api.get_playback', return_value=PLAYBACK_DATA)
+    mocker.patch('database.rooms.get_spotify_devices', return_value=[DEVICE_ID])
+    mocker.patch('services.spotify_api.pause')
+    mocker.patch('services.spotify_api.get_playback', return_value=PLAYBACK_DATA)
+    mocker.patch('database.rooms.set_room')
+
+    # Test1: success case.
+    rsp = spotify.spotify_skip_next(ROOM_ID)
+    assert rsp is not None
+    assert type(rsp) == dict
+    expected = {
+        'song': SONG,
+        'artist': ARTIST,
+        'albumArt': ALBUM_ART
+    }
+    assert rsp == expected
+
+# Check skip back to previous track response from spotify.
+def test_spotify_skip_previous(mocker):
+    global ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, DEVICE_ID, PLAYBACK_DATA, SONG, ARTIST, ALBUM_ART
+
+    mocker.patch('database.rooms.get_room', return_value={
+        'roomId': ROOM_ID,
+        'accessToken': ACCESS_TOKEN,
+        'refreshToken': REFRESH_TOKEN,
+        'tokenExpireTime': EXPIRE_TIME,
+        'playlistId': PLAYLIST_ID,
+        'isPlaying': 0
+    })
+    mocker.patch('time.time', return_value=EXPIRE_TIME)
+    mocker.patch('services.spotify_api.get_playback', return_value=PLAYBACK_DATA)
+    mocker.patch('database.rooms.get_spotify_devices', return_value=[DEVICE_ID])
+    mocker.patch('services.spotify_api.pause')
+    mocker.patch('services.spotify_api.get_playback', return_value=PLAYBACK_DATA)
+    mocker.patch('database.rooms.set_room')
+
+    # Test1: success case.
+    rsp = spotify.spotify_skip_previous(ROOM_ID)
+    assert rsp is not None
+    assert type(rsp) == dict
+    expected = {
+        'song': SONG,
+        'artist': ARTIST,
+        'albumArt': ALBUM_ART
     }
     assert rsp == expected
