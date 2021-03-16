@@ -2,16 +2,11 @@
 import json
 import pymssql
 from pymssql import Error
-
-# Database connection values.
-server = 'cvdj.database.windows.net'
-database = 'cvdj'
-username = 'cvdjadmin'
-password = 'elec498!' 
+from database.init import SERVER, USERNAME, PASSWORD, DATABASE
 
 # Insert room.
 def insert_room():
-    conn = pymssql.connect(server, username, password, database)
+    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
     cursor = conn.cursor()
     try:
         query = """ INSERT INTO rooms (accessToken)
@@ -33,7 +28,7 @@ def insert_room():
 
 # Update room from a dict.
 def set_room(room_id, room):
-    conn = pymssql.connect(server, username, password, database)
+    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
     cursor = conn.cursor()
     try:
         query = """ UPDATE rooms
@@ -58,7 +53,7 @@ def set_room(room_id, room):
 
 # Get room as dict.
 def get_room(room_id):
-    conn = pymssql.connect(server, username, password, database)
+    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
     cursor = conn.cursor(as_dict=True)
     try:
         query = """ SELECT *
@@ -80,7 +75,7 @@ def get_room(room_id):
 
 # Delete room.
 def delete_room(room_id):
-    conn = pymssql.connect(server, username, password, database)
+    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
     cursor = conn.cursor()
     try:
         query = """ DELETE FROM rooms
@@ -100,7 +95,7 @@ def delete_room(room_id):
 
 # Select users emotions list.
 def get_users_emotions(room_id):
-    conn = pymssql.connect(server, username, password, database)
+    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
     cursor = conn.cursor()
     try:
         query = """ SELECT emotionData FROM users
@@ -122,7 +117,7 @@ def get_users_emotions(room_id):
 
 # Select users device IDs.
 def get_spotify_devices(room_id):
-    conn = pymssql.connect(server, username, password, database)
+    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
     cursor = conn.cursor()
     try:
         query = """ SELECT spotifyDevice FROM users

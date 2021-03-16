@@ -2,13 +2,7 @@ import json
 import pymssql
 import database.rooms as rooms
 import database.users as users
-from tests.test_variables import ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, USER_ID, EMOTION_DATA, DEVICE_ID
-
-# Database connection values.
-server = 'cvdj.database.windows.net'
-database = 'cvdj'
-username = 'cvdjadmin'
-password = 'elec498!' 
+from tests.test_variables import ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, USER_ID, EMOTION_DATA, DEVICE_ID, SERVER, USERNAME, PASSWORD, DATABASE
 
 # Check insert room response from rooms.
 def test_insert_room():
@@ -170,7 +164,7 @@ def test_delete_room():
 ## Private helper functions.
 # Check rooms table test contents.
 def __check_rooms(expected_rows, expected_count):
-    conn = pymssql.connect(server, username, password, database)
+    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
     cursor = conn.cursor(as_dict=True)
 
     cursor.execute(
@@ -186,7 +180,7 @@ def __check_rooms(expected_rows, expected_count):
 
 # Check users table test contents.
 def __check_users(expected_rows, expected_count):
-    conn = pymssql.connect(server, username, password, database)
+    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
     cursor = conn.cursor(as_dict=True)
 
     cursor.execute(

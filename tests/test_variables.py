@@ -1,3 +1,9 @@
+# Database connection variables.
+SERVER = 'cvdj.database.windows.net'
+DATABASE = 'cvdj'
+USERNAME = 'cvdjadmin@cvdj'
+PASSWORD = 'elec498!' 
+
 # Room test variables.
 ROOM_ID = 1
 ACCESS_TOKEN = 'BQDi23QDxX5MFHjvy7PV2pz7dlqFCcsISfvvh-Tprdt1KAd4UfCBo0O9faJH9ZIJlgtvGEKWp4j_JDgnQq5iNFq-qE3fg3rhPRQZekWil2KyWdXWhTh8ukZzbpNkLMZIIxIUmO7_sbiWDragFnIDRbbwfNKCfcPtXnXagJc_i7kOFmef8usndjaDSpcIN37a6tfKnl9hZ-wES0yymdNQP0FVBnDrRKq3M_81MVdJrwzEwwCwN0Zz4m072sXC'

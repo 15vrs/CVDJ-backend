@@ -1,12 +1,12 @@
 import pymssql
 from pymssql import Error
 
-server = 'cvdj.database.windows.net'
-database = 'cvdj'
-username = 'cvdjadmin@cvdj'
-password = 'elec498!' 
+SERVER = 'cvdj.database.windows.net'
+DATABASE = 'cvdj'
+USERNAME = 'cvdjadmin@cvdj'
+PASSWORD = 'elec498!' 
 
-conn = pymssql.connect(server, username, password, database)
+conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
 cursor = conn.cursor()
 try:
     cursor.execute("""  DROP TABLE IF EXISTS users;
