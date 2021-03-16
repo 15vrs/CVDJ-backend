@@ -1,7 +1,6 @@
 import pymssql
 from pymssql import Error
 
-driver= '{ODBC Driver 17 for SQL Server}'
 server = 'cvdj.database.windows.net'
 database = 'cvdj'
 username = 'cvdjadmin'
@@ -17,7 +16,7 @@ try:
                             roomId INTEGER NOT NULL IDENTITY PRIMARY KEY,
                             accessToken TEXT,
                             refreshToken TEXT,
-                            tokenExpireTime TEXT,
+                            tokenExpireTime INTEGER,
                             playlistId TEXT,
                             isPlaying INTEGER NOT NULL DEFAULT(0)
                         );
@@ -32,6 +31,7 @@ try:
     conn.commit()
 
 except Error as e:
+    conn.rollback()
     print(e)
 
 finally:

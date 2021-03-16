@@ -21,14 +21,10 @@ def emotion(image_url):
         'returnFaceAttributes': 'emotion',
         'returnFaceId': 'true'
     }
-    response = requests.post(FACE_URL, params=params, headers=headers, json={"url": image_url}, verify=False)
-    json_response = extract_json(response.text)
+    response = requests.post(FACE_URL, params=params, headers=headers, json={'url': image_url}, verify=False)
+    json_response = __extract_json(response.text)
     j = json.loads(json_response)
-    return j["faceAttributes"]
-
-
-def extract_json(data):
-    return data[1:-1]
+    return j['faceAttributes']
 
 # Needs to have userId as an input
 def emotion_with_stream(user_id, data):
@@ -44,44 +40,45 @@ def emotion_with_stream(user_id, data):
         return json.dumps(str(data))
     else:
         return json.dumps(str({
-        "anger": 0,
-        "contempt": 0,
-        "disgust": 0,
-        "fear": 0,
-        "happiness": 0,
-        "neutral": 0,
-        "sadness": 0,
-        "surprise": 0
+        'anger': 0,
+        'contempt': 0,
+        'disgust': 0,
+        'fear': 0,
+        'happiness': 0,
+        'neutral': 0,
+        'sadness': 0,
+        'surprise': 0
     }))
 
-
 def average_emotion_data(userId, faces):
-    emotions = {"anger": 0, "contempt": 0, "disgust": 0, "fear": 0, "happiness": 0, "sadness": 0, "surprise": 0}
+    emotions = {'anger': 0, 'contempt': 0, 'disgust': 0, 'fear': 0, 'happiness': 0, 'sadness': 0, 'surprise': 0}
     for face in faces:
-        emotions["anger"] += face.face_attributes.emotion.anger
-        emotions["contempt"] += face.face_attributes.emotion.contempt
-        emotions["disgust"] += face.face_attributes.emotion.disgust
-        emotions["fear"] += face.face_attributes.emotion.fear
-        emotions["happiness"] += face.face_attributes.emotion.happiness
-        emotions["sadness"] += face.face_attributes.emotion.sadness
-        emotions["surprise"] += face.face_attributes.emotion.surprise
+        emotions['anger'] += face.face_attributes.emotion.anger
+        emotions['contempt'] += face.face_attributes.emotion.contempt
+        emotions['disgust'] += face.face_attributes.emotion.disgust
+        emotions['fear'] += face.face_attributes.emotion.fear
+        emotions['happiness'] += face.face_attributes.emotion.happiness
+        emotions['sadness'] += face.face_attributes.emotion.sadness
+        emotions['surprise'] += face.face_attributes.emotion.surprise
     for e in emotions:
         emotions[e] /= len(faces)
     users.set_emotion_data(userId, emotions)
     return emotions
 
-
 def save_emotion_data(userId, face):
-    emotion = json.dumps({
-        "anger": face.anger,
-        "contempt": face.contempt,
-        "disgust": face.disgust,
-        "fear": face.fear,
-        "happiness": face.happiness,
-        "neutral": face.neutral,
-        "sadness": face.sadness,
-        "surprise": face.surprise
-    })
+    emotion = {
+        'anger': face.anger,
+        'contempt': face.contempt,
+        'disgust': face.disgust,
+        'fear': face.fear,
+        'happiness': face.happiness,
+        'neutral': face.neutral,
+        'sadness': face.sadness,
+        'surprise': face.surprise
+    }
     users.set_emotion_data(userId, emotion)
     return emotion
 
+## Private helper functions.
+def __extract_json(data):
+    return data[1:-1]

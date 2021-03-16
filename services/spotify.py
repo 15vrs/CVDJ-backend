@@ -7,7 +7,7 @@ THRESHOLD = 0.09
 
 # Route: /create_room.
 def create_spotify_room(code, redirect_uri):
-    refresh_token, access_token, expire_time = api.get_access_tokens(code, redirect_uri)
+    access_token, refresh_token, expire_time = api.get_access_tokens(code, redirect_uri)
 
     room_id = rooms.insert_room()
     user_id = users.insert_user(room_id)
@@ -16,18 +16,18 @@ def create_spotify_room(code, redirect_uri):
     playlist_id = api.create_playlist(access_token, room_id, spotify_id)
     
     rooms.set_room(room_id, {
-        'refresh_token': refresh_token,
-        'access_token': access_token,
-        'expire_time': str(expire_time),
-        'playlist_id': playlist_id,
-        'is_playing': 0
+        'accessToken': access_token,
+        'refreshToken': refresh_token,
+        'tokenExpireTime': expire_time,
+        'playlistId': playlist_id,
+        'isPlaying': 0
     })
 
     return {
-        'roomId': int(room_id),
-        'userId': int(user_id),
-        'accessToken': str(access_token),
-        'playlistUri': str(playlist_id)
+        'roomId': room_id,
+        'userId': user_id,
+        'accessToken': access_token,
+        'playlistUri': playlist_id
     }
 
 # Route: /leave_room.
@@ -47,7 +47,7 @@ def join_spotify_room(room_id):
     access_token = room['accessToken'] 
     expire_time = room['tokenExpireTime']
     playlist_id = room['playlistId']
-    if (time.time() > float(expire_time)):
+    if (time.time() > expire_time):
         access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
     # Add user to room and return.
@@ -67,7 +67,7 @@ def add_spotify_device(room_id, user_id, device_id):
     access_token = room['accessToken'] 
     expire_time = room['tokenExpireTime']
     is_playing = room['isPlaying']
-    if (time.time() > float(expire_time)):
+    if (time.time() > expire_time):
         access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
     # Add device to user.
@@ -84,7 +84,7 @@ def play_spotify_room(room_id):
     expire_time = room['tokenExpireTime']
     playlist_id = room['playlistId']
     is_playing = room['isPlaying']
-    if (time.time() > float(expire_time)):
+    if (time.time() > expire_time):
         access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
     # Check context URI and position for accuracy.
@@ -115,7 +115,7 @@ def pause_spotify_room(room_id):
     access_token = room['accessToken'] 
     expire_time = room['tokenExpireTime']
     playlist_id = room['playlistId']
-    if (time.time() > float(expire_time)):
+    if (time.time() > expire_time):
         access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
     # Pause room playback.
@@ -134,7 +134,7 @@ def spotify_skip_next(room_id):
     access_token = room['accessToken'] 
     expire_time = room['tokenExpireTime']
     playlist_id = room['playlistId']
-    if (time.time() > float(expire_time)):
+    if (time.time() > expire_time):
         access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
     # Skip to next track in room playlist.
@@ -153,7 +153,7 @@ def spotify_skip_previous(room_id):
     access_token = room['accessToken'] 
     expire_time = room['tokenExpireTime']
     playlist_id = room['playlistId']
-    if (time.time() > float(expire_time)):
+    if (time.time() > expire_time):
         access_token, expire_time = api.refresh_access_tokens(refresh_token)
 
     # Skip back to previous track in room playlist.
@@ -163,7 +163,7 @@ def spotify_skip_previous(room_id):
             api.skip_previous(access_token, i)
     return __room_player(room_id, playlist_id, refresh_token, access_token, expire_time)
 
-## Private functions.
+## Private helper functions.
 # Update room emotion and playlist.
 def __room_update(access_token, room_id, playlist_id):
 
@@ -212,21 +212,22 @@ def __room_player(room_id, playlist_id, refresh_token, access_token, expire_time
         artist = playback_data['item']['artists'][0]['name']
         album_art = playback_data['item']['album']['images'][0]['url']
     except:
+        print('Failed to get playback data from Spotify.')
         is_playing = 0
         song = None
         artist = None
         album_art = None
     rooms.set_room(room_id, dict({
-        'refresh_token': refresh_token,
-        'access_token': access_token,
-        'expire_time': str(expire_time),
-        'playlist_id': playlist_id,
-        'is_playing': is_playing
+        'accessToken': access_token,
+        'refreshToken': refresh_token,
+        'tokenExpireTime': expire_time,
+        'playlistId': playlist_id,
+        'isPlaying': is_playing
     }))
     return {
-        'song': str(song),
-        'artist': str(artist),
-        'albumArt': str(album_art)
+        'song': song,
+        'artist': artist,
+        'albumArt': album_art
     }
 
 # Calculate target energy for the room.
