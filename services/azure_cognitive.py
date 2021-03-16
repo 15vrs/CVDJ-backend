@@ -8,7 +8,7 @@ import database.users as users
 
 # Azure properties
 SUBSCRIPTION_KEY = 'bc67fef798e4492a9cff3ee6d0000b19'
-RESOURCE_ENDPOINT = 'https://cvdj-face.cognitiveservices.azure.com/'
+RESOURCE_ENDPOINT = 'https://cvdj-face.cognitiveservices.azure.com'
 FACE_URL = RESOURCE_ENDPOINT + '/face/v1.0/detect'
 
 face_client = FaceClient(RESOURCE_ENDPOINT, CognitiveServicesCredentials(SUBSCRIPTION_KEY))
