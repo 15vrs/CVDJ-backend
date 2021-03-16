@@ -6,4 +6,3 @@ azure-cognitiveservices-vision-computervision
 azure.cognitiveservices.vision.face
 pymssql
 pytest
-pytest-mock

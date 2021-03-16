@@ -212,6 +212,7 @@ def __room_player(room_id, playlist_id, refresh_token, access_token, expire_time
         artist = playback_data['item']['artists'][0]['name']
         album_art = playback_data['item']['album']['images'][0]['url']
     except:
+        print('Failed to get playback data from Spotify.')
         is_playing = 0
         song = None
         artist = None
