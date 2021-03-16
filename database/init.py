@@ -3,7 +3,7 @@ from pymssql import Error
 
 server = 'cvdj.database.windows.net'
 database = 'cvdj'
-username = 'cvdjadmin'
+username = 'cvdjadmin@cvdj'
 password = 'elec498!' 
 
 conn = pymssql.connect(server, username, password, database)
