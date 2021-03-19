@@ -1,8 +1,9 @@
 import json
-import pymssql
+import pyodbc
 import database.rooms as rooms
 import database.users as users
-from tests.test_variables import ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, USER_ID, EMOTION_DATA, DEVICE_ID, SERVER, USERNAME, PASSWORD, DATABASE
+from database.init import DRIVER, SERVER, USERNAME, PASSWORD, DATABASE
+from tests.test_variables import ROOM_ID, ACCESS_TOKEN, REFRESH_TOKEN, EXPIRE_TIME, PLAYLIST_ID, USER_ID, EMOTION_DATA, DEVICE_ID
 
 # Check insert room response from rooms.
 def test_insert_room():
@@ -164,7 +165,7 @@ def test_delete_room():
 ## Private helper functions.
 # Check rooms table test contents.
 def __check_rooms(expected_rows, expected_count):
-    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
+    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
     cursor = conn.cursor(as_dict=True)
 
     cursor.execute(
@@ -180,7 +181,7 @@ def __check_rooms(expected_rows, expected_count):
 
 # Check users table test contents.
 def __check_users(expected_rows, expected_count):
-    conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
+    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
     cursor = conn.cursor(as_dict=True)
 
     cursor.execute(

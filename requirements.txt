@@ -4,5 +4,5 @@ cognitive-face
 face
 azure-cognitiveservices-vision-computervision
 azure.cognitiveservices.vision.face
-pymssql
+pyodbc
 pytest

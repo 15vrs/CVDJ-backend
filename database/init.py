@@ -1,12 +1,13 @@
-import pymssql
-from pymssql import Error
+import pyodbc
+from pyodbc import Error
 
-SERVER = 'cvdj.database.windows.net'
+DRIVER = '{ODBC Driver 13 for SQL Server}'
+SERVER = 'tcp:cvdj.database.windows.net'
 DATABASE = 'cvdj'
-USERNAME = 'cvdjadmin@cvdj'
+USERNAME = 'cvdjadmin'
 PASSWORD = 'elec498!' 
 
-conn = pymssql.connect(SERVER, USERNAME, PASSWORD, DATABASE)
+conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
 cursor = conn.cursor()
 try:
     cursor.execute("""  IF NOT EXISTS (SELECT * FROM rooms)
