@@ -20,8 +20,10 @@ jobs:
       with:
         python-version: '3.8'
   
-    - name: Install freetds for pymssql
-      run: sudo apt-get install freetds
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
     - name: Build using AppService-Build
       uses: azure/appservice-build@v2
