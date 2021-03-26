@@ -1,12 +1,12 @@
 # Access and store room level data.
-import pyodbc
-from pyodbc import Error
+import pymssql
+from pymssql import Error
 import json
 from database.init import DRIVER, SERVER, USERNAME, PASSWORD, DATABASE
 
 # Insert room.
 def insert_room():
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor()
     try:
         query = """ INSERT INTO rooms (accessToken)
@@ -28,7 +28,7 @@ def insert_room():
 
 # Update room from a dict.
 def set_room(room_id, room):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor()
     try:
         query = """ UPDATE rooms
@@ -53,7 +53,7 @@ def set_room(room_id, room):
 
 # Get room as dict.
 def get_room(room_id):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor(as_dict=True)
     try:
         query = """ SELECT *
@@ -75,7 +75,7 @@ def get_room(room_id):
 
 # Delete room.
 def delete_room(room_id):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor()
     try:
         query = """ DELETE FROM rooms
@@ -95,7 +95,7 @@ def delete_room(room_id):
 
 # Select users emotions list.
 def get_users_emotions(room_id):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor()
     try:
         query = """ SELECT emotionData FROM users
@@ -117,7 +117,7 @@ def get_users_emotions(room_id):
 
 # Select users device IDs.
 def get_spotify_devices(room_id):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor()
     try:
         query = """ SELECT spotifyDevice FROM users

@@ -1,6 +1,6 @@
 # Store user level data.
-import pyodbc
-from pyodbc import Error
+import pymssql
+from pymssql import Error
 import json
 from database.init import DRIVER, SERVER, USERNAME, PASSWORD, DATABASE
 
@@ -16,7 +16,7 @@ def insert_user(room_id):
             "sadness": 0.0,
             "surprise": 0.0
         })
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor()
     try:
         query = """ INSERT INTO users (roomId, emotionData)
@@ -38,7 +38,7 @@ def insert_user(room_id):
 
 # Update emotion data for user.
 def set_emotion_data(user_id, emotion_data):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor()
     try:
         query = """ UPDATE users
@@ -59,7 +59,7 @@ def set_emotion_data(user_id, emotion_data):
 
 # Update spotify device for user.
 def set_device_id(user_id, spotify_device):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor()
     try:
         query = """ UPDATE users
@@ -80,7 +80,7 @@ def set_device_id(user_id, spotify_device):
 
 # Delete user from users table.
 def delete_user(user_id):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor()
     try:
         query = """ DELETE FROM users

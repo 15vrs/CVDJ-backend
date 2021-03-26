@@ -1,5 +1,5 @@
 import json
-import pyodbc
+import pymssql
 import database.rooms as rooms
 import database.users as users
 from database.init import DRIVER, SERVER, USERNAME, PASSWORD, DATABASE
@@ -165,7 +165,7 @@ def test_delete_room():
 ## Private helper functions.
 # Check rooms table test contents.
 def __check_rooms(expected_rows, expected_count):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor(as_dict=True)
 
     cursor.execute(
@@ -181,7 +181,7 @@ def __check_rooms(expected_rows, expected_count):
 
 # Check users table test contents.
 def __check_users(expected_rows, expected_count):
-    conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
+    conn = pymssql.connect(server=SERVER, user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = conn.cursor(as_dict=True)
 
     cursor.execute(
