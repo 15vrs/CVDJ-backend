@@ -12,6 +12,7 @@ def insert_room():
         query = """ INSERT INTO rooms (accessToken)
                     VALUES (%s); """
         params = (None, )
+                    VALUES (?); """
 
         cursor.execute(query, params)
         room_id = cursor.lastrowid
@@ -32,12 +33,12 @@ def set_room(room_id, room):
     cursor = conn.cursor()
     try:
         query = """ UPDATE rooms
-                    SET accessToken = %s,
-                        refreshToken = %s,
-                        tokenExpireTime = %s,
-                        playlistId = %s,
-                        isPlaying = %s
-                    WHERE roomId = %s; """
+                    SET accessToken = ?,
+                        refreshToken = ?,
+                        tokenExpireTime = ?,
+                        playlistId = ?,
+                        isPlaying = ?
+                    WHERE roomId = ?; """
         params = (room['accessToken'], room['refreshToken'], room['tokenExpireTime'], room['playlistId'], room['isPlaying'], room_id)
 
         cursor.execute(query, params)
@@ -58,7 +59,7 @@ def get_room(room_id):
     try:
         query = """ SELECT *
                     FROM rooms
-                    WHERE roomId = %s; """
+                    WHERE roomId = ?; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -79,7 +80,7 @@ def delete_room(room_id):
     cursor = conn.cursor()
     try:
         query = """ DELETE FROM rooms
-                    WHERE roomId = %s; """
+                    WHERE roomId = ?; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -99,7 +100,7 @@ def get_users_emotions(room_id):
     cursor = conn.cursor()
     try:
         query = """ SELECT emotionData FROM users
-                    WHERE roomId = %s; """
+                    WHERE roomId = ?; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -121,7 +122,7 @@ def get_spotify_devices(room_id):
     cursor = conn.cursor()
     try:
         query = """ SELECT spotifyDevice FROM users
-                    WHERE roomId = %s; """
+                    WHERE roomId = ?; """
         params = (room_id, )
 
         cursor.execute(query, params)
