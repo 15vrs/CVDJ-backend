@@ -166,15 +166,17 @@ def test_delete_room():
 # Check rooms table test contents.
 def __check_rooms(expected_rows, expected_count):
     conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
 
     cursor.execute(
-        'SELECT * FROM rooms WHERE roomId = %s', (ROOM_ID, )
+        'SELECT * FROM rooms WHERE roomId = ?', (ROOM_ID, )
     )
-    rows = cursor.fetchall()
-    count = cursor.rowcount
-    assert rows == expected_rows
-    assert count == expected_count
+    columns = [column[0] for column in cursor.description]
+    rsp = []
+    for row in cursor.fetchall():
+        rsp.append(dict(zip(columns, row)))
+    assert rsp == expected_rows
+    assert len(rsp) == expected_count
     
     cursor.close()
     conn.close()
@@ -182,15 +184,17 @@ def __check_rooms(expected_rows, expected_count):
 # Check users table test contents.
 def __check_users(expected_rows, expected_count):
     conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
 
     cursor.execute(
-        'SELECT * FROM users WHERE userId = %s', (USER_ID, )
+        'SELECT * FROM users WHERE userId = ?', (USER_ID, )
     )
-    rows = cursor.fetchall()
-    count = cursor.rowcount
-    assert rows == expected_rows
-    assert count == expected_count
+    columns = [column[0] for column in cursor.description]
+    rsp = []
+    for row in cursor.fetchall():
+        rsp.append(dict(zip(columns, row)))
+    assert rsp == expected_rows
+    assert len(rsp) == expected_count
     
     cursor.close()
     conn.close()

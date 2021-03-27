@@ -1,7 +1,7 @@
 import pyodbc
 from pyodbc import Error
 
-DRIVER = '{ODBC Driver 13 for SQL Server}'
+DRIVER = '{ODBC Driver 17 for SQL Server}'
 SERVER = 'tcp:cvdj.database.windows.net'
 DATABASE = 'cvdj'
 USERNAME = 'cvdjadmin'

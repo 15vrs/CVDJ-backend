@@ -9,12 +9,13 @@ def insert_room():
     conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
     cursor = conn.cursor()
     try:
-        query = """ INSERT INTO rooms (accessToken)
-                    VALUES (%s); """
+        query = """ INSERT INTO rooms (accessToken) 
+                    OUTPUT INSERTED.roomId 
+                    VALUES (?); """
         params = (None, )
 
         cursor.execute(query, params)
-        room_id = cursor.lastrowid
+        room_id = cursor.fetchone()[0]
         conn.commit()
         return int(room_id)
 
@@ -32,12 +33,12 @@ def set_room(room_id, room):
     cursor = conn.cursor()
     try:
         query = """ UPDATE rooms
-                    SET accessToken = %s,
-                        refreshToken = %s,
-                        tokenExpireTime = %s,
-                        playlistId = %s,
-                        isPlaying = %s
-                    WHERE roomId = %s; """
+                    SET accessToken = ?,
+                        refreshToken = ?,
+                        tokenExpireTime = ?,
+                        playlistId = ?,
+                        isPlaying = ?
+                    WHERE roomId = ?; """
         params = (room['accessToken'], room['refreshToken'], room['tokenExpireTime'], room['playlistId'], room['isPlaying'], room_id)
 
         cursor.execute(query, params)
@@ -54,15 +55,16 @@ def set_room(room_id, room):
 # Get room as dict.
 def get_room(room_id):
     conn = pyodbc.connect('DRIVER='+DRIVER+';SERVER='+SERVER+';DATABASE='+DATABASE+';UID='+USERNAME+';PWD='+ PASSWORD)
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
     try:
         query = """ SELECT *
                     FROM rooms
-                    WHERE roomId = %s; """
+                    WHERE roomId = ?; """
         params = (room_id, )
 
         cursor.execute(query, params)
-        room = cursor.fetchone()
+        columns = [column[0] for column in cursor.description]
+        room = dict(zip(columns, cursor.fetchone()))
         return room
     
     except Error as e:
@@ -79,7 +81,7 @@ def delete_room(room_id):
     cursor = conn.cursor()
     try:
         query = """ DELETE FROM rooms
-                    WHERE roomId = %s; """
+                    WHERE roomId = ?; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -99,7 +101,7 @@ def get_users_emotions(room_id):
     cursor = conn.cursor()
     try:
         query = """ SELECT emotionData FROM users
-                    WHERE roomId = %s; """
+                    WHERE roomId = ?; """
         params = (room_id, )
 
         cursor.execute(query, params)
@@ -121,7 +123,7 @@ def get_spotify_devices(room_id):
     cursor = conn.cursor()
     try:
         query = """ SELECT spotifyDevice FROM users
-                    WHERE roomId = %s; """
+                    WHERE roomId = ?; """
         params = (room_id, )
 
         cursor.execute(query, params)
