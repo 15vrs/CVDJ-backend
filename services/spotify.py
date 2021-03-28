@@ -163,39 +163,6 @@ def spotify_skip_previous(room_id):
             api.skip_previous(access_token, i)
     return __room_player(room_id, playlist_id, refresh_token, access_token, expire_time)
 
-# Update room emotion and playlist.
-def _room_update(access_token, room_id, playlist_id):
-
-    # Run update code if it exists with users.
-    user_emotions = rooms.get_users_emotions(room_id)
-    num_users = len(user_emotions)
-    if num_users > 0:
-        emotions = {'anger': 0, 'contempt': 0, 'disgust': 0, 'fear': 0, 'happiness': 0, 'neutral':0, 'sadness': 0, 'surprise': 0}
-        for e in emotions:
-            emotions[e] = sum([i[e] for i in user_emotions]) / num_users
-        max_emotion = max(emotions, key=emotions.get)
-
-        # Metrics for finding a new track.
-        existing = api.get_playlist_tracks(access_token, playlist_id)
-        target_energy = __room_energy(emotions)
-        target_valence = __room_valence(emotions)
-
-        # Find a new track id to add to playlist.
-        playlist_ids = api.search_playlist(access_token, max_emotion)
-        for i in playlist_ids:
-            track_ids = api.get_playlist_tracks(access_token, i)
-            audio_features = api.get_audio_features(access_token, track_ids)
-            for j in audio_features:
-                check_duplicate = not (j['id'] in existing)
-                check_energy = (abs(j['energy'] - target_energy) < THRESHOLD)
-                check_valence = (abs(j['valence'] - target_valence) < THRESHOLD)
-
-                # If a fitting track is found, break out of all nested loops.
-                if check_duplicate and check_energy and check_valence:
-                    new_track_id = j['id']
-                    api.add_track_to_playlist(access_token, playlist_id, new_track_id)
-                    return
-
 ## Private helper functions.
 # Get playback data for the room from the API, for database update and response to frontend.
 def __room_player(room_id, playlist_id, refresh_token, access_token, expire_time):
@@ -223,31 +190,3 @@ def __room_player(room_id, playlist_id, refresh_token, access_token, expire_time
         'artist': artist,
         'albumArt': album_art
     }
-
-# Calculate target energy for the room.
-def __room_energy(emotions):
-    anger = emotions['anger']
-    contempt = emotions['contempt']
-    disgust = emotions['disgust']
-    fear = emotions['fear']
-    happiness = emotions['happiness']
-    # neutral = emotions['neutral']
-    # sadness = emotions['sadness']
-    surprise = emotions['surprise']
-
-    energy = (5*surprise + 4*anger + 3*fear + 2*contempt + 2*disgust + happiness) / 5
-    return energy
-
-# Calculate target valence for the room.
-def __room_valence(emotions):
-    anger = emotions['anger']
-    contempt = emotions['contempt']
-    disgust = emotions['disgust']
-    fear = emotions['fear']
-    happiness = emotions['happiness']
-    # neutral = emotions['neutral']
-    sadness = emotions['sadness']
-    surprise = emotions['surprise']
-
-    valence = ((happiness + surprise) - (anger + contempt + disgust + fear + sadness) + 1) / 2
-    return valence
